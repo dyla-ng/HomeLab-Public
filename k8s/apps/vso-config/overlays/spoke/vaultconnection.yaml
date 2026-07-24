@@ -1,0 +1,9 @@
+apiVersion: secrets.hashicorp.com/v1beta1
+kind: VaultConnection
+metadata:
+  name: vault-hub
+  namespace: vso
+spec:
+  address: https://vault.lab.example.com:32200
+  skipTLSVerify: false
+  caCertSecretRef: vault-ca

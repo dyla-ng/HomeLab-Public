@@ -1,0 +1,20 @@
+apiVersion: virtualenvironmentdownloadfile.proxmoxbpg.m.crossplane.io/v1alpha1
+kind: EnvironmentDownloadFile
+metadata:
+  name: security-onion-iso
+  namespace: crossplane-system
+spec:
+  providerConfigRef:
+    name: proxmox-hub-ns
+    kind: ProviderConfig
+  forProvider:
+    nodeName: R730PVE
+    datastoreId: local
+    contentType: iso
+    url: "https://download.securityonion.net/file/securityonion/securityonion-3.1.0-20260528.iso"
+    fileName: "securityonion-3.1.0-20260528.iso"
+    checksum: "62FAB57E247C843D6A04F0796D8162C732B65D82FC3E4A59D087135B9FD32912"
+    checksumAlgorithm: sha256
+    overwrite: true
+    overwriteUnmanaged: false
+    uploadTimeout: 3600

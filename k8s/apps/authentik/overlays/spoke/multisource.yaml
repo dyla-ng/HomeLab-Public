@@ -1,0 +1,7 @@
+appName: authentik
+chart: authentik
+namespace: authentik
+repoURL: https://charts.goauthentik.io
+syncWave: '0'
+valuesFile: k8s/apps/authentik/overlays/spoke/values.yaml
+version: 2026.5.3

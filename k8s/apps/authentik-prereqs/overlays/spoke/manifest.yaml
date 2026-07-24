@@ -1,0 +1,3 @@
+appName: authentik-prereqs
+namespace: authentik
+syncWave: '-2'

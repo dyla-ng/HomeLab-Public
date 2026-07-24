@@ -1,0 +1,62 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: apps-multisource-apps
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=default"]
+  syncPolicy:
+    preserveResourcesOnDeletion: true
+  generators:
+    - git:
+        repoURL: ssh://git@ssh.github.com:443/homelab-user/homelab-k8s.git
+        revision: HEAD
+        files:
+          - path: k8s/apps/*/overlays/apps/multisource.yaml
+  template:
+    metadata:
+      name: '{{.appName}}-apps'
+      namespace: argocd
+      annotations:
+        argocd.argoproj.io/sync-wave: '{{.syncWave}}'
+    spec:
+      project: default
+      sources:
+        - repoURL: '{{.repoURL}}'
+          chart: '{{.chart}}'
+          targetRevision: '{{.version}}'
+          helm:
+            releaseName: '{{.appName}}'
+            valueFiles:
+              - '$values/{{.valuesFile}}'
+        - repoURL: ssh://git@ssh.github.com:443/homelab-user/homelab-k8s.git
+          targetRevision: HEAD
+          ref: values
+      destination:
+        server: https://10.100.40.10:6443
+        namespace: '{{.namespace}}'
+      ignoreDifferences:
+        - group: apiextensions.k8s.io
+          kind: CustomResourceDefinition
+          jqPathExpressions:
+            - .metadata.labels
+            - .status
+            - .spec.conversion
+            - .spec.preserveUnknownFields
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - RespectIgnoreDifferences=true
+  templatePatch: |
+    {{- if .serverSideApply }}
+    spec:
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
+          - RespectIgnoreDifferences=true
+          - ServerSideApply=true
+    {{- end }}

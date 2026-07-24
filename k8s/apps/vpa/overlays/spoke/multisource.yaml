@@ -1,0 +1,8 @@
+appName: vpa
+namespace: vpa
+syncWave: '-1'
+repoURL: https://cowboysysop.github.io/charts/
+chart: vertical-pod-autoscaler
+version: 11.1.1
+valuesFile: k8s/apps/vpa/overlays/spoke/values.yaml
+serverSideApply: "true"

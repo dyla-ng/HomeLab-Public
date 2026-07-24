@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-rbac-cm
+  namespace: argocd
+data:
+  # Enable groups matching from OIDC claims
+  scopes: '[groups]'
+  # Unassigned SSO users default to read-only
+  policy.default: role:readonly
+  # Map homelab-admins to admin role
+  policy.csv: |
+    g, homelab-admins@kanidm.lab.example.com, role:admin

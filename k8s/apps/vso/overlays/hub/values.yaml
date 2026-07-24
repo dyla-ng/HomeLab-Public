@@ -1,0 +1,3 @@
+# Minimal VSO install for Hub - connects to local Vault
+defaultVaultConnection:
+  enabled: false

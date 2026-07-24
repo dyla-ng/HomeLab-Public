@@ -1,0 +1,7 @@
+appName: tetragon
+namespace: kube-system
+syncWave: '2'
+repoURL: https://helm.cilium.io
+chart: tetragon
+version: 1.7.0
+valuesFile: k8s/apps/tetragon/overlays/hub/values.yaml

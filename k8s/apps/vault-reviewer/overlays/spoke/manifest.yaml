@@ -1,0 +1,3 @@
+appName: vault-reviewer
+namespace: kube-system
+syncWave: '0'

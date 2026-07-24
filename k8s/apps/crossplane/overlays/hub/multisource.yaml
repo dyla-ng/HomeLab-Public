@@ -1,0 +1,8 @@
+appName: crossplane
+chart: crossplane
+namespace: crossplane-system
+repoURL: https://charts.upbound.io/stable
+syncWave: '0'
+valuesFile: k8s/apps/crossplane/overlays/hub/values.yaml
+version: 2.3.3-up.1
+

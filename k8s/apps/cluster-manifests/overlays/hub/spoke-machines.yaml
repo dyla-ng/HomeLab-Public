@@ -1,0 +1,250 @@
+apiVersion: cluster.x-k8s.io/v1beta2
+kind: Machine
+metadata:
+  name: spoke-control-plane-137
+  namespace: default
+  labels:
+    cluster.x-k8s.io/cluster-name: spoke
+    cluster.x-k8s.io/control-plane: ""
+spec:
+  clusterName: spoke
+  version: v1.35.2
+  bootstrap:
+    configRef:
+      apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
+      kind: TalosConfig
+      name: spoke-control-plane-137
+      apiGroup: bootstrap.cluster.x-k8s.io
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
+    kind: ProxmoxMachine
+    name: spoke-control-plane-137
+    apiGroup: infrastructure.cluster.x-k8s.io
+  providerID: proxmox://da94ae22-d82f-45fb-82ed-ff8b140b6a79
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
+kind: ProxmoxMachine
+metadata:
+  name: spoke-control-plane-137
+  namespace: default
+  labels:
+    cluster.x-k8s.io/cluster-name: spoke
+spec:
+  virtualMachineID: 137
+  providerID: proxmox://da94ae22-d82f-45fb-82ed-ff8b140b6a79
+  allowedNodes:
+    - R730PVE
+  numCores: 8
+  numSockets: 1
+  memoryMiB: 16384
+  templateSelector:
+    matchTags:
+      - talos
+  checks:
+    skipCloudInitStatus: true
+  network:
+    networkDevices:
+      - name: net0
+        bridge: vmbr99
+        vlan: 130
+      - name: net1
+        bridge: vmbr99
+        vlan: 120
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
+kind: TalosConfig
+metadata:
+  name: spoke-control-plane-137
+  namespace: default
+  labels:
+    cluster.x-k8s.io/cluster-name: spoke
+spec:
+  generateType: controlplane
+  talosVersion: v1.12.5
+  strategicPatches:
+    - |
+      cluster:
+        network:
+          cni:
+            name: none
+          podSubnets:
+            - 10.244.0.0/16
+          serviceSubnets:
+            - 10.96.0.0/16
+      machine:
+        kubelet:
+          image: ghcr.io/siderolabs/kubelet:v1.35.2
+          nodeIP:
+            validSubnets:
+              - 10.100.30.0/24
+        install:
+          image: ghcr.io/siderolabs/installer:v1.12.5
+        features:
+          kubePrism:
+            enabled: true
+            port: 7445
+          hostDNS:
+            enabled: true
+            forwardKubeDNSToHost: true
+---
+apiVersion: cluster.x-k8s.io/v1beta2
+kind: Machine
+metadata:
+  name: spoke-worker-138
+  namespace: default
+  labels:
+    cluster.x-k8s.io/cluster-name: spoke
+spec:
+  clusterName: spoke
+  version: v1.35.2
+  bootstrap:
+    configRef:
+      apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
+      kind: TalosConfig
+      name: spoke-worker-138
+      apiGroup: bootstrap.cluster.x-k8s.io
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
+    kind: ProxmoxMachine
+    name: spoke-worker-138
+    apiGroup: infrastructure.cluster.x-k8s.io
+  providerID: proxmox://aad7718c-1188-4fed-a690-28149e6629c7
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
+kind: ProxmoxMachine
+metadata:
+  name: spoke-worker-138
+  namespace: default
+  labels:
+    cluster.x-k8s.io/cluster-name: spoke
+spec:
+  virtualMachineID: 138
+  providerID: proxmox://aad7718c-1188-4fed-a690-28149e6629c7
+  allowedNodes:
+    - R730PVE
+  numCores: 8
+  numSockets: 1
+  memoryMiB: 24000
+  templateSelector:
+    matchTags:
+      - talos
+  checks:
+    skipCloudInitStatus: true
+  network:
+    networkDevices:
+      - name: net0
+        bridge: vmbr99
+        vlan: 130
+      - name: net1
+        bridge: vmbr99
+        vlan: 120
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
+kind: TalosConfig
+metadata:
+  name: spoke-worker-138
+  namespace: default
+  labels:
+    cluster.x-k8s.io/cluster-name: spoke
+spec:
+  generateType: worker
+  talosVersion: v1.12.5
+  strategicPatches:
+    - |
+      cluster:
+        network:
+          cni:
+            name: none
+          podSubnets:
+            - 10.244.0.0/16
+          serviceSubnets:
+            - 10.96.0.0/16
+      machine:
+        kubelet:
+          image: ghcr.io/siderolabs/kubelet:v1.35.2
+          nodeIP:
+            validSubnets:
+              - 10.100.30.0/24
+        install:
+          image: ghcr.io/siderolabs/installer:v1.12.5
+---
+apiVersion: cluster.x-k8s.io/v1beta2
+kind: Machine
+metadata:
+  name: spoke-worker-139
+  namespace: default
+  labels:
+    cluster.x-k8s.io/cluster-name: spoke
+spec:
+  clusterName: spoke
+  version: v1.35.2
+  bootstrap:
+    configRef:
+      apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
+      kind: TalosConfig
+      name: spoke-worker-139
+      apiGroup: bootstrap.cluster.x-k8s.io
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
+    kind: ProxmoxMachine
+    name: spoke-worker-139
+    apiGroup: infrastructure.cluster.x-k8s.io
+  providerID: proxmox://831ff1c5-b807-4773-a4f9-9267e93c34df
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
+kind: ProxmoxMachine
+metadata:
+  name: spoke-worker-139
+  namespace: default
+  labels:
+    cluster.x-k8s.io/cluster-name: spoke
+spec:
+  virtualMachineID: 139
+  providerID: proxmox://831ff1c5-b807-4773-a4f9-9267e93c34df
+  allowedNodes:
+    - R730PVE
+  numCores: 12
+  numSockets: 1
+  memoryMiB: 32768
+  templateSelector:
+    matchTags:
+      - talos
+  checks:
+    skipCloudInitStatus: true
+  network:
+    networkDevices:
+      - name: net0
+        bridge: vmbr99
+        vlan: 130
+      - name: net1
+        bridge: vmbr99
+        vlan: 120
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
+kind: TalosConfig
+metadata:
+  name: spoke-worker-139
+  namespace: default
+  labels:
+    cluster.x-k8s.io/cluster-name: spoke
+spec:
+  generateType: worker
+  talosVersion: v1.12.5
+  strategicPatches:
+    - |
+      cluster:
+        network:
+          cni:
+            name: none
+          podSubnets:
+            - 10.244.0.0/16
+          serviceSubnets:
+            - 10.96.0.0/16
+      machine:
+        kubelet:
+          image: ghcr.io/siderolabs/kubelet:v1.35.2
+          nodeIP:
+            validSubnets:
+              - 10.100.30.0/24
+        install:
+          image: ghcr.io/siderolabs/installer:v1.12.5

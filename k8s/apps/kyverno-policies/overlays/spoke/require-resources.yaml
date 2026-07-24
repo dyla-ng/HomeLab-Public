@@ -1,0 +1,39 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-resources
+  annotations:
+    policies.kyverno.io/title: "Require CPU and Memory Requests and Limits"
+    policies.kyverno.io/category: "Best Practices"
+    policies.kyverno.io/description: >
+      As best practice, all containers should define resource requests and limits.
+      This policy checks that CPU and memory requests and limits are defined.
+spec:
+  validationFailureAction: Audit
+  background: true
+  rules:
+  - name: check-resources
+    match:
+      any:
+      - resources:
+          kinds:
+          - Pod
+    exclude:
+      any:
+      - resources:
+          namespaces:
+          - kube-system
+          - kube-public
+          - kube-node-lease
+    validate:
+      message: "CPU and memory requests and limits are required for all containers."
+      pattern:
+        spec:
+          containers:
+          - resources:
+              limits:
+                cpu: "?*"
+                memory: "?*"
+              requests:
+                cpu: "?*"
+                memory: "?*"

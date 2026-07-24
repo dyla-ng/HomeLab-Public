@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vault-auth
+  namespace: fleet
+---
+apiVersion: secrets.hashicorp.com/v1beta1
+kind: VaultAuth
+metadata:
+  name: vault-auth
+  namespace: fleet
+spec:
+  vaultConnectionRef: vso/vault-hub
+  method: jwt
+  mount: jwt-spoke
+  jwt:
+    role: vso-fleet-role
+    serviceAccount: vault-auth
+    tokenExpirationSeconds: 3600

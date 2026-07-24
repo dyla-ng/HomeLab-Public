@@ -1,0 +1,279 @@
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: JWTOIDCAuthEngineConfig
+metadata:
+  name: jwt-spoke
+  namespace: vault-config-operator
+spec:
+  authentication:
+    path: kubernetes
+    role: vco-role
+    serviceAccount:
+      name: controller-manager
+  path: jwt-spoke
+  JWTValidationPubKeys:
+    - REDACTED
+  boundIssuer: https://10.100.30.10:6443
+---
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: JWTOIDCAuthEngineRole
+metadata:
+  name: spoke-cert-manager-role
+  namespace: vault-config-operator
+spec:
+  name: cert-manager-role
+  authentication:
+    path: kubernetes
+    role: vco-role
+    serviceAccount:
+      name: controller-manager
+  path: jwt-spoke
+  roleType: jwt
+  userClaim: sub
+  boundAudiences:
+    - https://kubernetes.default.svc.cluster.local
+    - https://10.100.30.10:6443
+  boundClaims:
+    sub: "system:serviceaccount:cert-manager:cert-manager"
+  tokenPolicies:
+    - cert-manager-policy
+  tokenTTL: "3600s"
+---
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: JWTOIDCAuthEngineRole
+metadata:
+  name: spoke-eso-role
+  namespace: vault-config-operator
+spec:
+  name: eso-role
+  authentication:
+    path: kubernetes
+    role: vco-role
+    serviceAccount:
+      name: controller-manager
+  path: jwt-spoke
+  roleType: jwt
+  userClaim: sub
+  boundAudiences:
+    - https://kubernetes.default.svc.cluster.local
+    - https://10.100.30.10:6443
+  boundClaims:
+    sub: "system:serviceaccount:external-secrets:external-secrets"
+  tokenPolicies:
+    - eso-policy
+  tokenTTL: "3600s"
+---
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: JWTOIDCAuthEngineRole
+metadata:
+  name: spoke-vso-argocd-role
+  namespace: vault-config-operator
+spec:
+  name: vso-argocd-role
+  authentication:
+    path: kubernetes
+    role: vco-role
+    serviceAccount:
+      name: controller-manager
+  path: jwt-spoke
+  roleType: jwt
+  userClaim: sub
+  boundAudiences:
+    - https://kubernetes.default.svc.cluster.local
+    - https://10.100.30.10:6443
+  boundClaims:
+    sub: "system:serviceaccount:argocd:vault-auth"
+  tokenPolicies:
+    - eso-policy
+  tokenTTL: "3600s"
+---
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: JWTOIDCAuthEngineRole
+metadata:
+  name: spoke-vso-authentik-role
+  namespace: vault-config-operator
+spec:
+  name: vso-authentik-role
+  authentication:
+    path: kubernetes
+    role: vco-role
+    serviceAccount:
+      name: controller-manager
+  path: jwt-spoke
+  roleType: jwt
+  userClaim: sub
+  boundAudiences:
+    - https://kubernetes.default.svc.cluster.local
+    - https://10.100.30.10:6443
+  boundClaims:
+    sub: "system:serviceaccount:authentik:vault-auth"
+  tokenPolicies:
+    - eso-policy
+  tokenTTL: "3600s"
+---
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: JWTOIDCAuthEngineRole
+metadata:
+  name: spoke-vso-arc-role
+  namespace: vault-config-operator
+spec:
+  name: vso-arc-role
+  authentication:
+    path: kubernetes
+    role: vco-role
+    serviceAccount:
+      name: controller-manager
+  path: jwt-spoke
+  roleType: jwt
+  userClaim: sub
+  boundAudiences:
+    - https://kubernetes.default.svc.cluster.local
+    - https://10.100.30.10:6443
+  boundClaims:
+    sub: "system:serviceaccount:arc-runners:vault-auth"
+  tokenPolicies:
+    - eso-policy
+  tokenTTL: "3600s"
+---
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: JWTOIDCAuthEngineRole
+metadata:
+  name: spoke-vso-harbor-role
+  namespace: vault-config-operator
+spec:
+  name: vso-harbor-role
+  authentication:
+    path: kubernetes
+    role: vco-role
+    serviceAccount:
+      name: controller-manager
+  path: jwt-spoke
+  roleType: jwt
+  userClaim: sub
+  boundAudiences:
+    - https://kubernetes.default.svc.cluster.local
+    - https://10.100.30.10:6443
+  boundClaims:
+    sub: "system:serviceaccount:harbor:vault-auth"
+  tokenPolicies:
+    - eso-policy
+  tokenTTL: "3600s"
+---
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: JWTOIDCAuthEngineRole
+metadata:
+  name: spoke-vso-cert-manager-role
+  namespace: vault-config-operator
+spec:
+  name: vso-cert-manager-role
+  authentication:
+    path: kubernetes
+    role: vco-role
+    serviceAccount:
+      name: controller-manager
+  path: jwt-spoke
+  roleType: jwt
+  userClaim: sub
+  boundAudiences:
+    - https://kubernetes.default.svc.cluster.local
+    - https://10.100.30.10:6443
+  boundClaims:
+    sub: "system:serviceaccount:cert-manager:vault-auth"
+  tokenPolicies:
+    - eso-policy
+  tokenTTL: "3600s"
+---
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: JWTOIDCAuthEngineRole
+metadata:
+  name: spoke-vso-kube-system-role
+  namespace: vault-config-operator
+spec:
+  name: vso-kube-system-role
+  authentication:
+    path: kubernetes
+    role: vco-role
+    serviceAccount:
+      name: controller-manager
+  path: jwt-spoke
+  roleType: jwt
+  userClaim: sub
+  boundAudiences:
+    - https://kubernetes.default.svc.cluster.local
+    - https://10.100.30.10:6443
+  boundClaims:
+    sub: "system:serviceaccount:kube-system:vault-auth"
+  tokenPolicies:
+    - eso-policy
+  tokenTTL: "3600s"
+---
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: JWTOIDCAuthEngineRole
+metadata:
+  name: spoke-vso-monitoring-role
+  namespace: vault-config-operator
+spec:
+  name: vso-monitoring-role
+  authentication:
+    path: kubernetes
+    role: vco-role
+    serviceAccount:
+      name: controller-manager
+  path: jwt-spoke
+  roleType: jwt
+  userClaim: sub
+  boundAudiences:
+    - https://kubernetes.default.svc.cluster.local
+    - https://10.100.30.10:6443
+  boundClaims:
+    sub: "system:serviceaccount:monitoring:vault-auth"
+  tokenPolicies:
+    - eso-policy
+  tokenTTL: "3600s"
+---
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: JWTOIDCAuthEngineRole
+metadata:
+  name: spoke-vso-garage-role
+  namespace: vault-config-operator
+spec:
+  name: vso-garage-role
+  authentication:
+    path: kubernetes
+    role: vco-role
+    serviceAccount:
+      name: controller-manager
+  path: jwt-spoke
+  roleType: jwt
+  userClaim: sub
+  boundAudiences:
+    - https://kubernetes.default.svc.cluster.local
+    - https://10.100.30.10:6443
+  boundClaims:
+    sub: "system:serviceaccount:garage:vault-auth"
+  tokenPolicies:
+    - eso-policy
+  tokenTTL: "3600s"
+---
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: JWTOIDCAuthEngineRole
+metadata:
+  name: spoke-vso-fleet-role
+  namespace: vault-config-operator
+spec:
+  name: vso-fleet-role
+  authentication:
+    path: kubernetes
+    role: vco-role
+    serviceAccount:
+      name: controller-manager
+  path: jwt-spoke
+  roleType: jwt
+  userClaim: sub
+  boundAudiences:
+    - https://kubernetes.default.svc.cluster.local
+    - https://10.100.30.10:6443
+  boundClaims:
+    sub: "system:serviceaccount:fleet:vault-auth"
+  tokenPolicies:
+    - eso-policy
+  tokenTTL: "3600s"

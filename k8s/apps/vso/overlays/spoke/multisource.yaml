@@ -1,0 +1,7 @@
+appName: vso
+chart: vault-secrets-operator
+namespace: vso
+repoURL: https://helm.releases.hashicorp.com
+syncWave: '0'
+valuesFile: k8s/apps/vso/overlays/spoke/values.yaml
+version: 1.4.0

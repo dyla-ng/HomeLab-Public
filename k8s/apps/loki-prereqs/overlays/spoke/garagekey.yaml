@@ -1,0 +1,20 @@
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageKey
+metadata:
+  name: loki-key
+  namespace: monitoring
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  name: loki-key
+  neverExpires: true
+  bucketPermissions:
+    - bucketRef:
+        name: loki
+        namespace: garage
+      read: true
+      write: true
+      owner: false
+  secretTemplate:
+    name: garage-loki-credentials

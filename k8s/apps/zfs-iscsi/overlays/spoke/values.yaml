@@ -1,0 +1,34 @@
+csiDriver:
+  name: "org.democratic-csi.iscsi"
+
+controller:
+  enabled: true
+  strategy: deployment
+
+node:
+  enabled: true
+  kubeletHostPath: /var/lib/kubelet
+  hostPID: true
+  driver:
+    extraEnv:
+      - name: ISCSIADM_HOST_STRATEGY
+        value: nsenter
+      - name: ISCSIADM_HOST_PATH
+        value: /usr/local/sbin/iscsiadm
+    iscsiDirHostPath: /var/iscsi
+    iscsiDirHostPathType: DirectoryOrCreate
+
+driver:
+  existingConfigSecret: truenas-iscsi-secret
+  config:
+    driver: freenas-api-iscsi
+
+storageClasses:
+  - name: zfs-iscsi
+    defaultClass: true
+    reclaimPolicy: Delete
+    volumeBindingMode: Immediate
+    allowVolumeExpansion: true
+    parameters:
+      fsType: ext4
+    mountOptions: []

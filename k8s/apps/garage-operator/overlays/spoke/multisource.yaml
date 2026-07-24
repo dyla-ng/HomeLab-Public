@@ -1,0 +1,8 @@
+appName: garage-operator
+namespace: garage-operator-system
+syncWave: '-1'
+repoURL: oci://ghcr.io/rajsinghtech/charts/garage-operator
+chart: garage-operator
+version: 0.6.18
+valuesFile: k8s/apps/garage-operator/overlays/spoke/values.yaml
+serverSideApply: "true"

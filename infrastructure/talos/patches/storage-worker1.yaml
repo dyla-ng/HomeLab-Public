@@ -1,0 +1,6 @@
+machine:
+  network:
+    interfaces:
+      - interface: ens19
+        addresses:
+          - 10.100.20.11/24

@@ -1,0 +1,3 @@
+appName: security-onion-vm
+namespace: crossplane-system
+syncWave: '6'

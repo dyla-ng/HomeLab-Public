@@ -1,0 +1,15 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: fleet-tls
+  namespace: fleet
+spec:
+  secretName: fleet-tls
+  issuerRef:
+    name: vault-issuer
+    kind: ClusterIssuer
+  commonName: fleet.lab.example.com
+  dnsNames:
+    - fleet.lab.example.com
+  duration: 2160h
+  renewBefore: 360h

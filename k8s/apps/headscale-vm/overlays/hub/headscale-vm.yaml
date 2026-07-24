@@ -1,0 +1,61 @@
+apiVersion: virtualenvironmentvm.proxmoxbpg.m.crossplane.io/v1alpha1
+kind: EnvironmentVM
+metadata:
+  name: headscale
+  namespace: crossplane-system
+spec:
+  providerConfigRef:
+    name: proxmox-hub-ns
+    kind: ProviderConfig
+  forProvider:
+    nodeName: R730PVE
+    name: headscale
+    vmId: 210
+    tags:
+      - headscale
+      - lab-access
+
+    cpu:
+      - cores: 1
+        sockets: 1
+        type: host
+
+    memory:
+      - dedicated: 2048
+        floating: 2048
+
+    disk:
+      - datastoreId: Thinpool
+        interface: scsi0
+        size: 20
+        iothread: true
+        importFrom: "local:import/debian-13-genericcloud-amd64.qcow2"
+
+    initialization:
+      - datastoreId: Thinpool
+        interface: ide2
+        dns:
+          - domain: "lab.example.com"
+            servers:
+              - "10.100.90.1"
+        userAccount:
+          - username: admin
+            keys:
+              # - "REDACTED"
+        ipConfig:
+          - ipv4:
+              - address: "10.100.90.10/24"
+                gateway: "10.100.90.1"
+
+    networkDevice:
+      - bridge: vmbr99
+        model: virtio
+        vlanId: 190
+        firewall: false
+
+    operatingSystem:
+      - type: l26
+
+    scsiHardware: virtio-scsi-single
+    onBoot: true
+    started: true

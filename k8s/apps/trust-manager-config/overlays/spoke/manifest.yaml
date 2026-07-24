@@ -1,0 +1,3 @@
+appName: trust-manager-config
+namespace: cert-manager
+syncWave: '0'

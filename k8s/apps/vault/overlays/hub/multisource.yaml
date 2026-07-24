@@ -1,0 +1,7 @@
+appName: vault
+chart: vault
+namespace: vault
+repoURL: https://helm.releases.hashicorp.com
+syncWave: '0'
+valuesFile: k8s/apps/vault/overlays/hub/values.yaml
+version: 0.28.0

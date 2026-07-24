@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cm
+  namespace: argocd
+data:
+  resource.customizations.health.gateway.networking.k8s.io_Gateway: |
+    hs = {}
+    if obj.status ~= nil then
+      for _, cond in ipairs(obj.status.conditions or {}) do
+        if cond.type == "Programmed" and cond.status == "True" then
+          hs.status = "Healthy"
+          hs.message = "Gateway is programmed"
+          return hs
+        end
+        if cond.type == "Programmed" and cond.status == "False" then
+          hs.status = "Degraded"
+          hs.message = cond.message
+          return hs
+        end
+      end
+    end
+    hs.status = "Progressing"
+    hs.message = "Waiting for gateway to be programmed"
+    return hs
+  resource.customizations.health.gateway.networking.k8s.io_HTTPRoute: |
+    hs = {}
+    if obj.status ~= nil then
+      for _, parent in ipairs(obj.status.parents or {}) do
+        for _, cond in ipairs(parent.conditions or {}) do
+          if cond.type == "Accepted" and cond.status == "True" then
+            hs.status = "Healthy"
+            hs.message = "HTTPRoute accepted"
+            return hs
+          end
+          if cond.type == "Accepted" and cond.status == "False" then
+            hs.status = "Degraded"
+            hs.message = cond.message
+            return hs
+          end
+        end
+      end
+    end
+    hs.status = "Progressing"
+    hs.message = "Waiting for route to be accepted"
+    return hs
+  resource.customizations.health.gateway.networking.k8s.io_GatewayClass: |
+    hs = {}
+    if obj.status ~= nil then
+      for _, cond in ipairs(obj.status.conditions or {}) do
+        if cond.type == "Accepted" and cond.status == "True" then
+          hs.status = "Healthy"
+          hs.message = "GatewayClass accepted"
+          return hs
+        end
+      end
+    end
+    hs.status = "Progressing"
+    hs.message = "Waiting for GatewayClass to be accepted"
+    return hs

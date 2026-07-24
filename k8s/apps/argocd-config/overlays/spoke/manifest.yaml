@@ -1,0 +1,3 @@
+appName: argocd-config
+namespace: argocd
+syncWave: '0'

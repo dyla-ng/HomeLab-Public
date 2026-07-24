@@ -1,0 +1,4 @@
+# trust-manager must be installed in the same namespace as cert-manager
+app:
+  trust:
+    namespace: cert-manager

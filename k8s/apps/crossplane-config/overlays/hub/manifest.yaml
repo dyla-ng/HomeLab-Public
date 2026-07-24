@@ -1,0 +1,3 @@
+appName: crossplane-config
+namespace: crossplane-system
+syncWave: '5'

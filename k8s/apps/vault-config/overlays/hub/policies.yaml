@@ -1,0 +1,77 @@
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: Policy
+metadata:
+  name: cert-manager-policy
+  namespace: vault-config-operator
+spec:
+  authentication:
+    path: kubernetes
+    role: vco-role
+    serviceAccount:
+      name: controller-manager
+  policy: |
+    path "pki_int/sign/internal-homelab" {
+      capabilities = ["create", "update"]
+    }
+  type: acl
+---
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: Policy
+metadata:
+  name: eso-policy
+  namespace: vault-config-operator
+spec:
+  authentication:
+    path: kubernetes
+    role: vco-role
+    serviceAccount:
+      name: controller-manager
+  policy: |
+    path "secret/data/homelab/*" {
+      capabilities = ["read"]
+    }
+    path "secret/data/homelab" {
+      capabilities = ["read", "list"]
+    }
+  type: acl
+---
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: Policy
+metadata:
+  name: vco-policy
+  namespace: vault-config-operator
+spec:
+  authentication:
+    path: kubernetes
+    role: vco-role
+    serviceAccount:
+      name: controller-manager
+  policy: |
+    path "auth/*" {
+      capabilities = ["create", "read", "update", "delete", "list"]
+    }
+    path "sys/auth/*" {
+      capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+    }
+    path "sys/auth" {
+      capabilities = ["read", "list"]
+    }
+    path "sys/policy/*" {
+      capabilities = ["create", "read", "update", "delete", "list"]
+    }
+    path "sys/policies/*" {
+      capabilities = ["create", "read", "update", "delete", "list"]
+    }
+    path "pki_int/*" {
+      capabilities = ["create", "read", "update", "delete", "list"]
+    }
+    path "secret/*" {
+      capabilities = ["create", "read", "update", "delete", "list"]
+    }
+    path "sys/mounts/*" {
+      capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+    }
+    path "sys/mounts" {
+      capabilities = ["read", "list"]
+    }
+  type: acl

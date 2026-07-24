@@ -1,0 +1,121 @@
+# Configurations for the authentik chart
+blueprints:
+  configMaps:
+    - blueprint-argocd
+    - blueprint-harbor
+    - blueprint-groups
+    - blueprint-kanidm
+    - blueprint-grafana
+    - blueprint-fleet
+
+
+
+authentik:
+  # Static PostgreSQL connection config — sensitive values come via envFrom
+  postgresql:
+    host: authentik-postgresql
+    user: authentik
+    name: authentik
+    port: 5432
+
+server:
+  envFrom:
+    - secretRef:
+        name: authentik-secrets
+  env:
+    - name: SSL_CERT_FILE
+      value: /etc/ssl/certs/custom-ca-certificates.crt
+    - name: REQUESTS_CA_BUNDLE
+      value: /etc/ssl/certs/custom-ca-certificates.crt
+  ingress:
+    enabled: false
+    ingressClassName: cilium
+    annotations:
+      cert-manager.io/cluster-issuer: vault-issuer
+    hosts:
+      - authentik.lab.example.com
+    tls:
+      - secretName: authentik-tls
+        hosts:
+          - authentik.lab.example.com
+  initContainers:
+    - name: init-ca-certificates
+      image: ghcr.io/goauthentik/server:2026.5.3
+      command:
+        - /bin/sh
+        - -c
+        - |
+          cp -a /etc/ssl/certs/ca-certificates.crt /custom-certs/ca-certificates.crt
+          cat /certs/kanidm-ca.pem >> /custom-certs/ca-certificates.crt
+      volumeMounts:
+        - name: kanidm-ca
+          mountPath: /certs
+        - name: custom-certs
+          mountPath: /custom-certs
+  volumeMounts:
+    - name: custom-certs
+      mountPath: /etc/ssl/certs/custom-ca-certificates.crt
+      subPath: ca-certificates.crt
+      readOnly: true
+  volumes:
+    - name: kanidm-ca
+      secret:
+        secretName: authentik-secrets
+        items:
+          - key: KANIDM_CA_CERT
+            path: kanidm-ca.pem
+    - name: custom-certs
+      emptyDir: {}
+
+worker:
+  envFrom:
+    - secretRef:
+        name: authentik-secrets
+  env:
+    - name: SSL_CERT_FILE
+      value: /etc/ssl/certs/custom-ca-certificates.crt
+    - name: REQUESTS_CA_BUNDLE
+      value: /etc/ssl/certs/custom-ca-certificates.crt
+  initContainers:
+    - name: init-ca-certificates
+      image: ghcr.io/goauthentik/server:2026.5.3
+      command:
+        - /bin/sh
+        - -c
+        - |
+          cp -a /etc/ssl/certs/ca-certificates.crt /custom-certs/ca-certificates.crt
+          cat /certs/kanidm-ca.pem >> /custom-certs/ca-certificates.crt
+      volumeMounts:
+        - name: kanidm-ca
+          mountPath: /certs
+        - name: custom-certs
+          mountPath: /custom-certs
+  volumeMounts:
+    - name: custom-certs
+      mountPath: /etc/ssl/certs/custom-ca-certificates.crt
+      subPath: ca-certificates.crt
+      readOnly: true
+  volumes:
+    - name: kanidm-ca
+      secret:
+        secretName: authentik-secrets
+        items:
+          - key: KANIDM_CA_CERT
+            path: kanidm-ca.pem
+    - name: custom-certs
+      emptyDir: {}
+
+postgresql:
+  enabled: true
+  auth:
+    existingSecret: authentik-secrets
+    secretKeys:
+      adminPasswordKey: postgresql-password
+      userPasswordKey: postgresql-password
+  primary:
+    persistence:
+      enabled: true
+      storageClass: zfs-iscsi
+      size: 8Gi
+
+

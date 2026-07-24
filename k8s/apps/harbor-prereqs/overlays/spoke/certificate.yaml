@@ -1,0 +1,15 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: harbor-tls
+  namespace: harbor
+spec:
+  secretName: harbor-tls
+  issuerRef:
+    name: vault-issuer
+    kind: ClusterIssuer
+  commonName: harbor.lab.example.com
+  dnsNames:
+    - harbor.lab.example.com
+  duration: 2160h
+  renewBefore: 360h

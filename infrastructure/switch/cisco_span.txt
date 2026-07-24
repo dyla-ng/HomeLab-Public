@@ -1,0 +1,2 @@
+# TODO: rudimentary documentation of running-config
+# (managing ancient switch declaratively would be a nightmare)

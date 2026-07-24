@@ -1,0 +1,22 @@
+controller:
+  enabled: true
+
+dashboard:
+  enabled: true
+  ingress:
+    enabled: true
+    ingressClassName: cilium
+    annotations:
+      cert-manager.io/cluster-issuer: vault-issuer
+    hosts:
+      - host: goldilocks.lab.example.com
+        paths:
+          - path: /
+            type: Prefix
+    tls:
+      - secretName: goldilocks-tls
+        hosts:
+          - goldilocks.lab.example.com
+
+vpa:
+  enabled: false

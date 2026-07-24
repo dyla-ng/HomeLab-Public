@@ -1,0 +1,3 @@
+appName: cluster-manifests
+namespace: default
+syncWave: '10'

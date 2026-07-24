@@ -1,0 +1,98 @@
+apiVersion: addons.cluster.x-k8s.io/v1alpha1
+kind: HelmChartProxy
+metadata:
+  name: spoke-cilium
+  namespace: default
+spec:
+  clusterSelector:
+    matchLabels:
+      cni-cluster: spoke
+  repoURL: https://helm.cilium.io/
+  chartName: cilium
+  version: "1.19.5"
+  namespace: kube-system
+  options:
+    waitForJobs: true
+    wait: true
+    timeout: 10m
+  # Values match Spoke's LIVE `helm get values cilium -n kube-system` output
+  # exactly (confirmed 2026-07-01), field-for-field, to ensure the first
+  # CAAPH reconcile is a genuine no-op rather than an unintended change.
+  #
+  # KNOWN RISK, ACCEPTED: Cilium's chart uses genCA/genSignedCert for
+  # Hubble's server cert — these re-evaluate on every `helm upgrade`
+  # regardless of whether values changed, producing a NEW cert each time
+  # (see TODOS.md "Fix Hubble TLS Cert Management" follow-up item). This
+  # will cause a brief hubble-relay/hubble-ui trust break on this first
+  # reconcile until those pods restart and pick up the new cert. Accepted
+  # as low-stakes (observability-only) for this migration; fix the cert
+  # method (cronJob/certmanager) before relying on frequent automated
+  # reconciles against this HelmChartProxy going forward.
+  valuesTemplate: |
+    ipam:
+      mode: kubernetes
+    kubeProxyReplacement: true
+    k8sServiceHost: localhost
+    k8sServicePort: 7445
+    securityContext:
+      capabilities:
+        ciliumAgent:
+          - CHOWN
+          - KILL
+          - NET_ADMIN
+          - NET_RAW
+          - IPC_LOCK
+          - SYS_ADMIN
+          - SYS_RESOURCE
+          - DAC_OVERRIDE
+          - FOWNER
+          - SETGID
+          - SETUID
+        cleanCiliumState:
+          - NET_ADMIN
+          - SYS_ADMIN
+          - SYS_RESOURCE
+    cgroup:
+      autoMount:
+        enabled: false
+      hostRoot: /sys/fs/cgroup
+    bgpControlPlane:
+      enabled: true
+    ingressController:
+      enabled: true
+      default: true
+      loadbalancerMode: dedicated
+    hubble:
+      enabled: true
+      relay:
+        enabled: true
+      ui:
+        enabled: true
+        ingress:
+          enabled: true
+          className: cilium
+          annotations:
+            cert-manager.io/cluster-issuer: vault-issuer
+          hosts:
+            - hubble.lab.example.com
+          tls:
+            - secretName: hubble-tls
+              hosts:
+                - hubble.lab.example.com
+      metrics:
+        enabled:
+          - dns
+          - drop
+          - tcp
+          - flow
+          - port-distribution
+          - icmp
+          - "httpV2:exemplars=true;labelsContext=source_ip,source_namespace,source_workload,destination_ip,destination_namespace,destination_workload,traffic_direction"
+        serviceMonitor:
+          enabled: true
+          labels:
+            release: kube-prometheus-stack
+        dashboards:
+          enabled: true
+          labels:
+            grafana_dashboard: "1"

@@ -1,0 +1,7 @@
+appName: cert-manager
+chart: cert-manager
+namespace: cert-manager
+repoURL: https://charts.jetstack.io
+syncWave: '-5'
+valuesFile: k8s/apps/cert-manager/overlays/hub/values.yaml
+version: v1.20.2

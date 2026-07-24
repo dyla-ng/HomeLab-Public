@@ -1,0 +1,8 @@
+appName: arc-controller
+chart: gha-runner-scale-set-controller
+namespace: arc-system
+repoURL: oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set-controller
+serverSideApply: true
+syncWave: '0'
+valuesFile: k8s/apps/arc-controller/overlays/spoke/values.yaml
+version: 0.14.1

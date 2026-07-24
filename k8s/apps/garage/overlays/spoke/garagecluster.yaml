@@ -1,0 +1,90 @@
+apiVersion: garage.rajsingh.info/v1beta2
+kind: GarageCluster
+metadata:
+  name: garage
+  namespace: garage
+spec:
+  image: dxflrs/amd64_garage:v2.3.0
+  zone: spoke
+  layoutPolicy: Auto
+
+  replication:
+    factor: 1
+    consistencyMode: consistent
+
+  storage:
+    replicas: 1
+    metadata:
+      storageClassName: zfs-iscsi
+      size: 5Gi
+    data:
+      storageClassName: zfs-iscsi
+      size: 100Gi
+    env:
+      - name: GARAGE_ALLOW_WORLD_READABLE_SECRETS
+        value: "true"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 65532
+      runAsGroup: 65532
+      fsGroup: 65532
+      fsGroupChangePolicy: OnRootMismatch
+      seccompProfile:
+        type: RuntimeDefault
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      runAsNonRoot: true
+      runAsUser: 65532
+      runAsGroup: 65532
+      readOnlyRootFilesystem: true
+      seccompProfile:
+        type: RuntimeDefault
+      capabilities:
+        drop:
+          - ALL
+
+  network:
+    rpcSecretRef:
+      name: garage-secret
+      key: rpcSecret
+    rpcBindPort: 3901
+    service:
+      type: ClusterIP
+
+  s3Api:
+    bindPort: 3900
+    region: garage
+
+  admin:
+    bindPort: 3903
+    adminTokenSecretRef:
+      name: garage-admin-token
+      key: adminToken
+
+  monitoring:
+    enabled: true
+    additionalLabels:
+      release: kube-prometheus-stack
+    interval: 30s
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageReferenceGrant
+metadata:
+  name: allow-monitoring
+  namespace: garage
+spec:
+  from:
+    - kind: GarageKey
+      namespace: monitoring
+  to:
+    - kind: GarageCluster
+      name: garage
+    - kind: GarageBucket
+      name: loki

@@ -1,0 +1,83 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fleet-mysql-headless
+  namespace: fleet
+spec:
+  clusterIP: None
+  ports:
+  - name: mysql
+    port: 3306
+  selector:
+    app: fleet-mysql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fleet-mysql
+  namespace: fleet
+spec:
+  ports:
+  - name: mysql
+    port: 3306
+  selector:
+    app: fleet-mysql
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: fleet-mysql
+  namespace: fleet
+spec:
+  serviceName: fleet-mysql-headless
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fleet-mysql
+  template:
+    metadata:
+      labels:
+        app: fleet-mysql
+    spec:
+      securityContext:
+        fsGroup: 999
+      containers:
+      - name: mysql
+        image: mysql:8.0
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: fleet-secrets
+              key: mysql-root-password
+        - name: MYSQL_DATABASE
+          value: fleet
+        - name: MYSQL_USER
+          value: fleet
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: fleet-secrets
+              key: mysql-password
+        ports:
+        - name: mysql
+          containerPort: 3306
+        volumeMounts:
+        - name: mysql-data
+          mountPath: /var/lib/mysql
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: 100m
+            memory: 500Mi
+  volumeClaimTemplates:
+  - metadata:
+      name: mysql-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: zfs-iscsi
+      resources:
+        requests:
+          storage: 10Gi

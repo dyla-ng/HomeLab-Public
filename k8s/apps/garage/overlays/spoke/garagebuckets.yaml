@@ -1,0 +1,21 @@
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageBucket
+metadata:
+  name: loki
+  namespace: garage
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  globalAlias: loki
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageBucket
+metadata:
+  name: velero
+  namespace: garage
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  globalAlias: velero

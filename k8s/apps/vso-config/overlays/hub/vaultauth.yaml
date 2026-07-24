@@ -1,0 +1,15 @@
+apiVersion: secrets.hashicorp.com/v1beta1
+kind: VaultAuth
+metadata:
+  name: hub-auth
+  namespace: vso
+spec:
+  vaultConnectionRef: vault-hub
+  method: kubernetes
+  mount: kubernetes
+  kubernetes:
+    role: eso-role
+    serviceAccount: vso-vault-secrets-operator-controller-manager
+    tokenExpirationSeconds: 3600
+  allowedNamespaces:
+    - "*"

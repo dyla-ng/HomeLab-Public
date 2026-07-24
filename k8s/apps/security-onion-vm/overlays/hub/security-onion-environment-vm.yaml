@@ -1,0 +1,66 @@
+apiVersion: virtualenvironmentvm.proxmoxbpg.m.crossplane.io/v1alpha1
+kind: EnvironmentVM
+metadata:
+  name: security-onion
+  namespace: crossplane-system
+spec:
+  providerConfigRef:
+    name: proxmox-hub-ns
+    kind: ProviderConfig
+  forProvider:
+    nodeName: R730PVE
+    name: security-onion
+    vmId: 200
+    bootOrder:
+      - scsi0
+      - ide2
+    tags:
+      - security-onion
+      - soc
+    cpu:
+      - cores: 8
+        sockets: 1
+        type: host
+
+
+    memory:
+      - dedicated: 32768
+        floating: 32768
+
+
+    disk:
+      - datastoreId: Thinpool
+        interface: scsi0
+        size: 200
+        iothread: true
+
+    # ISO boot media
+    cdrom:
+      - enabled: true
+        fileId: "local:iso/securityonion-3.1.0-20260528.iso"
+        interface: ide2
+
+    # NIC 1: mgmt
+    networkDevice:
+      - bridge: vmbr99
+        model: virtio
+        vlanId: 180
+        firewall: false
+
+      # NIC 2: sniffing / mirroring
+      - bridge: vmbr199
+        model: virtio
+        firewall: false
+
+      # NIC 3: storage (for Elastic and full PCAPs)
+      - bridge: vmbr99
+        model: virtio
+        vlanId: 120
+        firewall: false
+
+    operatingSystem:
+      - type: l26
+
+    scsiHardware: virtio-scsi-single
+    onBoot: true
+    started: true

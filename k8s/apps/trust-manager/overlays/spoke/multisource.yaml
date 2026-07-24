@@ -1,0 +1,7 @@
+appName: trust-manager
+chart: trust-manager
+namespace: cert-manager
+repoURL: https://charts.jetstack.io
+syncWave: '0'
+valuesFile: k8s/apps/trust-manager/overlays/spoke/values.yaml
+version: v0.23.0

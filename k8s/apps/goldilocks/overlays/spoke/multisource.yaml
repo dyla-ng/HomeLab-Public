@@ -1,0 +1,7 @@
+appName: goldilocks
+namespace: goldilocks
+syncWave: '0'
+repoURL: https://charts.fairwinds.com/stable
+chart: goldilocks
+version: 10.4.0
+valuesFile: k8s/apps/goldilocks/overlays/spoke/values.yaml

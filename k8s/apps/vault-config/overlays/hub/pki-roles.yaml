@@ -1,0 +1,39 @@
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: PKISecretEngineRole
+metadata:
+  name: internal-homelab
+  namespace: vault-config-operator
+spec:
+  authentication:
+    path: kubernetes
+    role: vco-role
+    serviceAccount:
+      name: controller-manager
+  path: pki_int
+  allowedDomains:
+    - lab.example.com
+  allowSubdomains: true
+  maxTTL: "720h"
+---
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: PKISecretEngineRole
+metadata:
+  name: vault-tls
+  namespace: vault-config-operator
+spec:
+  authentication:
+    path: kubernetes
+    role: vco-role
+    serviceAccount:
+      name: controller-manager
+  path: pki_int
+  allowedDomains:
+    - vault.lab.example.com
+    - vault.mgmt.lab.example.com
+    - vault.vault.svc.cluster.local
+    - vault-0.vault-internal
+    - vault
+    - vault.vault
+  allowBareDomains: true
+  allowSubdomains: true
+  maxTTL: "43800h"

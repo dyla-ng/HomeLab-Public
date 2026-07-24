@@ -1,0 +1,7 @@
+appName: alloy
+namespace: monitoring
+syncWave: '2'
+repoURL: https://grafana.github.io/helm-charts
+chart: alloy
+version: 1.10.0
+valuesFile: k8s/apps/alloy/overlays/spoke/values.yaml

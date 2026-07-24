@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - spoke-cluster-secret.yaml
+  - apps-cluster-secret.yaml
+  - vaultauth.yaml
+patches:
+  - path: argocd-cm-health.yaml
+    target:
+      kind: ConfigMap
+      name: argocd-cm

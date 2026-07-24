@@ -1,0 +1,7 @@
+appName: zfs-nfs
+chart: democratic-csi
+namespace: kube-system
+repoURL: https://democratic-csi.github.io/charts/
+syncWave: '0'
+valuesFile: k8s/apps/zfs-nfs/overlays/spoke/values.yaml
+version: 0.14.7

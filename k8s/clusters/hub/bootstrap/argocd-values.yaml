@@ -1,0 +1,65 @@
+global:
+  logging:
+    format: text
+    level: info
+
+controller:
+  replicas: 1
+  resources:
+    limits:
+      cpu: "2"
+      memory: 3072Mi
+    requests:
+      cpu: 250m
+      memory: 512Mi
+
+dex:
+  enabled: false
+
+redis:
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+server:
+  replicas: 1
+  extraArgs:
+    - --insecure
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+repoServer:
+  replicas: 1
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1024Mi
+    requests:
+      cpu: 100m
+      memory: 512Mi
+
+applicationSet:
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+notifications:
+  enabled: false
+
+configs:
+  cm:
+    timeout.reconciliation: 30s

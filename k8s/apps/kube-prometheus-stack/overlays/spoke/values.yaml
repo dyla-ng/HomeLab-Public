@@ -1,0 +1,155 @@
+fullnameOverride: kube-prometheus-stack
+
+grafana:
+  enabled: true
+  fullnameOverride: grafana
+  deploymentStrategy:
+    type: Recreate
+  defaultDashboardsEnabled: true
+  defaultDashboardsTimezone: America/New_York
+  admin:
+    existingSecret: grafana-admin-secret
+    userKey: admin-user
+    passwordKey: admin-password
+  persistence:
+    enabled: true
+    storageClassName: zfs-iscsi
+    size: 10Gi
+  ingress:
+    enabled: true
+    ingressClassName: cilium
+    annotations:
+      cert-manager.io/cluster-issuer: vault-issuer
+    hosts:
+      - grafana.lab.example.com
+    tls:
+      - secretName: grafana-tls
+        hosts:
+          - grafana.lab.example.com
+  grafana.ini:
+    server:
+      root_url: https://grafana.lab.example.com
+    auth.generic_oauth:
+      enabled: true
+      name: Authentik
+      allow_sign_up: true
+      client_id: grafana
+      scopes: openid profile email
+      auth_url: https://authentik.lab.example.com/application/o/authorize/
+      token_url: https://authentik.lab.example.com/application/o/token/
+      api_url: https://authentik.lab.example.com/application/o/userinfo/
+      role_attribute_path: contains(groups, 'homelab-admins') && 'Admin' || 'Viewer'
+      # Trust the internal Vault CA for server-to-server token exchange calls
+      tls_client_ca: /etc/ssl/certs/homelab-ca.crt
+  envFromSecret: grafana-oauth-secret
+  extraConfigmapMounts:
+    - name: homelab-root-ca
+      mountPath: /etc/ssl/certs/homelab-ca.crt
+      subPath: ca.crt
+      configMap: homelab-root-ca
+      readOnly: true
+  additionalDataSources:
+    - name: Loki
+      type: loki
+      url: http://loki-gateway.monitoring.svc.cluster.local
+      access: proxy
+      isDefault: false
+      jsonData:
+        maxLines: 1000
+
+
+prometheus:
+  prometheusSpec:
+    retention: 30d
+    retentionSize: 45GB
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: zfs-iscsi
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 50Gi
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    probeSelectorNilUsesHelmValues: false
+    enableRemoteWriteReceiver: true
+    externalLabels:
+      cluster: spoke
+
+alertmanager:
+  alertmanagerSpec:
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: zfs-iscsi
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 5Gi
+  config:
+    global:
+      resolve_timeout: 5m
+    route:
+      group_by: ['alertname', 'cluster', 'namespace']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 12h
+      receiver: 'null'
+      routes:
+        - matchers:
+            - alertname = Watchdog
+          receiver: 'null'
+    receivers:
+      - name: 'null'
+
+nodeExporter:
+  enabled: true
+
+kube-state-metrics:
+  enabled: true
+
+prometheusOperator:
+  enabled: true
+  admissionWebhooks:
+    enabled: true
+    certManager:
+      enabled: true
+  tls:
+    enabled: true
+
+defaultRules:
+  create: true
+  rules:
+    alertmanager: true
+    etcd: false
+    configReloaders: true
+    general: true
+    k8sContainerCpuUsageSecondsTotal: true
+    k8sContainerMemoryCache: true
+    k8sContainerMemoryRss: true
+    k8sContainerMemorySwap: true
+    k8sContainerResource: true
+    k8sPodOwner: true
+    kubeApiserverAvailability: true
+    kubeApiserverBurnrate: true
+    kubeApiserverHistogram: true
+    kubeApiserverSlos: true
+    kubeControllerManager: false
+    kubeProxy: false
+    kubeSchedulerAlerting: false
+    kubeSchedulerRecording: false
+    kubeStateMetrics: true
+    kubelet: true
+    kubePrometheusGeneral: true
+    kubePrometheusNodeRecording: true
+    kubernetesApps: true
+    kubernetesResources: true
+    kubernetesStorage: true
+    kubernetesSystem: true
+    node: true
+    nodeExporterAlerting: true
+    nodeExporterRecording: true
+    prometheus: true
+    prometheusOperator: true

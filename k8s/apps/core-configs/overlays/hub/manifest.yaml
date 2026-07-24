@@ -1,0 +1,3 @@
+appName: core-configs
+namespace: kube-system
+syncWave: '0'

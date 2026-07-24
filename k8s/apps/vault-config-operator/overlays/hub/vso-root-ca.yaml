@@ -1,0 +1,20 @@
+apiVersion: secrets.hashicorp.com/v1beta1
+kind: VaultStaticSecret
+metadata:
+  name: root-ca
+  namespace: vault-config-operator
+spec:
+  vaultAuthRef: vault-auth
+  mount: secret
+  type: kv-v2
+  path: homelab/pki
+  refreshAfter: 24h
+  destination:
+    name: root-ca
+    create: true
+    overwrite: true
+    transformation:
+      excludeRaw: true
+      templates:
+        ca.crt:
+          text: '{{ index .Secrets "root-ca" }}'

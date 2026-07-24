@@ -1,0 +1,67 @@
+# NOTE: This is Fleet MDM (fleetdm.com) for device management, NOT Security Onion's Elastic Fleet Server.
+# Easy to confuse (ask me how i know)
+
+hostName: fleet.lab.example.com
+imageTag: v4.88.0
+
+fleet:
+  secretName: fleet-secrets
+  autoApplySQLMigrations: true
+  tls:
+    # TLS is terminated at the Envoy Gateway (ingress edge), so pod-level TLS is kept disabled
+    enabled: false
+  additionalCAs:
+    enabled: true
+    secrets:
+      - name: fleet-tls
+  vulnerabilities:
+    databasesPath: /tmp/vulndb
+    periodicity: 12h
+
+
+
+
+
+
+
+
+database:
+  secretName: fleet-secrets
+  address: fleet-mysql:3306
+  database: fleet
+  username: fleet
+  passwordKey: mysql-password
+
+cache:
+  address: fleet-redis:6379
+  database: "0"
+  usePassword: true
+  secretName: fleet-secrets
+  passwordKey: redis-password
+
+envsFrom:
+  - name: FLEET_AUTH_JWT_KEY
+    valueFrom:
+      secretKeyRef:
+        name: fleet-secrets
+        key: session-encrypt-key
+  - name: FLEET_SERVER_SALT
+    valueFrom:
+      secretKeyRef:
+        name: fleet-secrets
+        key: salt-key
+
+mysql:
+  enabled: false
+
+redis:
+  enabled: false
+
+valkey:
+  replica:
+    enabled: false
+  auth:
+    enabled: false
+
+
+

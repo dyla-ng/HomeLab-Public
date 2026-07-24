@@ -1,0 +1,16 @@
+apiVersion: secrets.hashicorp.com/v1beta1
+kind: VaultAuth
+metadata:
+  name: spoke-auth
+  namespace: vso
+spec:
+  vaultConnectionRef: vault-hub
+  method: jwt
+  mount: jwt-spoke
+  jwt:
+    role: eso-role
+    serviceAccount: vso-vault-secrets-operator-controller-manager
+    tokenExpirationSeconds: 3600
+  allowedNamespaces:
+    - "*"
+# TODO: be more explicit and targeted with this to allow Vault authentication to required namespaces

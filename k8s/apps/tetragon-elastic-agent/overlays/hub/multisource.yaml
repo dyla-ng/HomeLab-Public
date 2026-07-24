@@ -1,0 +1,7 @@
+appName: tetragon-elastic-agent
+namespace: kube-system
+syncWave: '3'
+repoURL: https://helm.elastic.co
+chart: elastic-agent
+version: 9.4.2
+valuesFile: k8s/apps/tetragon-elastic-agent/overlays/hub/values.yaml

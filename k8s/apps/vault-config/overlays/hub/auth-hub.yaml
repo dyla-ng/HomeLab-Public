@@ -1,0 +1,109 @@
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: KubernetesAuthEngineConfig
+metadata:
+  name: kubernetes
+  namespace: vault-config-operator
+spec:
+  authentication:
+    path: kubernetes
+    role: vco-role
+    serviceAccount:
+      name: controller-manager
+---
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: KubernetesAuthEngineRole
+metadata:
+  name: hub-cert-manager-role
+  namespace: vault-config-operator
+spec:
+  name: cert-manager-role
+  authentication:
+    path: kubernetes
+    role: vco-role
+    serviceAccount:
+      name: controller-manager
+  path: kubernetes
+  policies:
+    - cert-manager-policy
+  targetServiceAccounts:
+    - cert-manager
+  targetNamespaces:
+    targetNamespaces:
+      - cert-manager
+  aliasNameSource: serviceaccount_name
+  tokenTTL: 3600
+---
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: KubernetesAuthEngineRole
+metadata:
+  name: hub-eso-role
+  namespace: vault-config-operator
+spec:
+  name: eso-role
+  authentication:
+    path: kubernetes
+    role: vco-role
+    serviceAccount:
+      name: controller-manager
+  path: kubernetes
+  policies:
+    - eso-policy
+  targetServiceAccounts:
+    - external-secrets
+  targetNamespaces:
+    targetNamespaces:
+      - external-secrets
+  aliasNameSource: serviceaccount_uid
+  tokenTTL: 3600
+---
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: KubernetesAuthEngineRole
+metadata:
+  name: hub-vso-argocd-role
+  namespace: vault-config-operator
+spec:
+  name: vso-argocd-role
+  authentication:
+    path: kubernetes
+    role: vco-role
+    serviceAccount:
+      name: controller-manager
+  path: kubernetes
+  policies:
+    - eso-policy
+  targetServiceAccounts:
+    - vault-auth
+  targetNamespaces:
+    targetNamespaces:
+      - argocd
+  aliasNameSource: serviceaccount_uid
+  tokenTTL: 3600
+---
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: KubernetesAuthEngineRole
+metadata:
+  name: hub-vso-role
+  namespace: vault-config-operator
+spec:
+  name: vso-role
+  authentication:
+    path: kubernetes
+    role: vco-role
+    serviceAccount:
+      name: controller-manager
+  path: kubernetes
+  policies:
+    - eso-policy
+  targetServiceAccounts:
+    - vault-auth
+  targetNamespaces:
+    targetNamespaces:
+      - default
+      - capmox-system
+      - argocd
+      - crossplane-system
+      - kube-system
+  aliasNameSource: serviceaccount_uid
+  tokenTTL: 3600
+
+

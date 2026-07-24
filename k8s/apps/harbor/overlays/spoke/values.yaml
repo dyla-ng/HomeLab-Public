@@ -1,0 +1,71 @@
+expose:
+  type: clusterIP
+  tls:
+    enabled: false
+
+externalURL: https://harbor.lab.example.com
+
+# Secrets Configuration (linked to synced Vault secrets via harbor-prereqs app)
+existingSecretAdminPassword: harbor-secrets
+existingSecretAdminPasswordKey: HARBOR_ADMIN_PASSWORD
+existingSecretSecretKey: harbor-secrets
+
+
+
+core:
+  existingSecret: harbor-secrets
+  existingXsrfSecret: harbor-secrets
+  existingXsrfSecretKey: csrf-key
+  existingSecretKey: POSTGRESQL_PASSWORD
+  extraEnvVars:
+    - name: CONFIG_OVERWRITE_JSON
+      valueFrom:
+        secretKeyRef:
+          name: harbor-secrets
+          key: CONFIG_OVERWRITE_JSON
+
+jobservice:
+  existingSecret: harbor-secrets
+  existingSecretKey: JOBSERVICE_SECRET
+
+registry:
+  existingSecret: harbor-secrets
+  existingSecretKey: REGISTRY_HTTP_SECRET
+
+# Use Harbor's bundled internal database.
+database:
+  type: internal
+  internal:
+    password: "placeholder-OVERRIDDEN-BY-KYVERNO"
+
+# Internal Redis Configuration
+redis:
+  type: internal
+
+# Persistent Storage Configuration using democratic-csi (zfs-iscsi)
+persistence:
+  enabled: true
+  persistentVolumeClaim:
+    registry:
+      storageClass: zfs-iscsi
+      size: 125Gi
+    database:
+      storageClass: zfs-iscsi
+      size: 10Gi
+    redis:
+      storageClass: zfs-iscsi
+      size: 2Gi
+    trivy:
+      storageClass: zfs-iscsi
+      size: 10Gi
+    jobservice:
+      jobLog:
+        storageClass: zfs-iscsi
+        size: 1Gi
+
+# Trivy Vulnerability Scanner
+trivy:
+  enabled: true
+# because the zfs-iscsi volumes are ReadWriteOnce and cannot be mounted on multiple nodes simultaneously (obv)
+updateStrategy:
+  type: Recreate

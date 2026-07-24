@@ -1,0 +1,7 @@
+appName: vault-config-operator
+namespace: vault-config-operator
+syncWave: '2'
+repoURL: https://redhat-cop.github.io/vault-config-operator
+chart: vault-config-operator
+version: v0.8.49
+valuesFile: k8s/apps/vault-config-operator/overlays/hub/values.yaml

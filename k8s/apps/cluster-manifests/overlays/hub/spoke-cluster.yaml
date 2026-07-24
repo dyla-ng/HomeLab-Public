@@ -1,0 +1,88 @@
+# Note: in a "fresh" reconcilation or a DR, this file (and spoke-machines.yaml) are going to need modified again.
+# Several things were changed such that CAPMOX and CAPT adopted the existing spoke instead of provisioning a new one.
+apiVersion: cluster.x-k8s.io/v1beta2
+kind: Cluster
+metadata:
+  name: spoke
+  namespace: default
+  labels:
+    cni-cluster: spoke
+spec:
+  paused: false
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+        - 10.244.0.0/16
+    services:
+      cidrBlocks:
+        - 10.96.0.0/16
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
+    kind: TalosControlPlane
+    name: spoke-control-plane
+    apiGroup: controlplane.cluster.x-k8s.io
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
+    kind: ProxmoxCluster
+    name: spoke
+    apiGroup: infrastructure.cluster.x-k8s.io
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
+kind: ProxmoxCluster
+metadata:
+  name: spoke
+  namespace: default
+spec:
+  controlPlaneEndpoint:
+    host: 10.100.30.10
+    port: 6443
+  credentialsRef:
+    name: spoke-proxmox-credentials
+    namespace: capmox-system
+  allowedNodes:
+    - R730PVE
+  dnsServers:
+    - 10.100.30.1
+  ipv4Config:
+    addresses:
+      - 10.100.30.11-10.100.30.20
+    gateway: 10.100.30.1
+    prefix: 24
+---
+apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
+kind: TalosControlPlane
+metadata:
+  name: spoke-control-plane
+  namespace: default
+spec:
+  version: v1.35.2
+  replicas: 1
+  controlPlaneConfig:
+    controlplane:
+      generateType: controlplane
+      talosVersion: v1.12.5
+      strategicPatches:
+        - |
+          cluster:
+            network:
+              cni:
+                name: none
+              podSubnets:
+                - 10.244.0.0/16
+              serviceSubnets:
+                - 10.96.0.0/16
+          machine:
+            kubelet:
+              image: ghcr.io/siderolabs/kubelet:v1.35.2
+              nodeIP:
+                validSubnets:
+                  - 10.100.30.0/24
+            install:
+              image: ghcr.io/siderolabs/installer:v1.12.5
+            features:
+              kubePrism:
+                enabled: true
+                port: 7445
+              hostDNS:
+                enabled: true
+                forwardKubeDNSToHost: true

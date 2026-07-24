@@ -1,0 +1,95 @@
+version: 1
+metadata:
+  name: homelab-kanidm-sso
+  labels:
+    blueprints.goauthentik.io/instantiate: "true"
+
+entries:
+  # NOTE: Reference entry for default-source-authentication flow.
+  # state: present with only identifiers means "look it up, don't modify it".
+  # Having it as an in-blueprint entry allows !KeyOf to resolve it with the
+  # correct pbm_uuid (parent PolicyBindingModel PK) rather than flow_uuid —
+  # which is what policybinding.target actually stores in the database.
+  - model: authentik_flows.flow
+    id: flow-source-authentication
+    state: present
+    identifiers:
+      slug: default-source-authentication
+
+  - model: authentik_crypto.certificatekeypair
+    id: kanidm-ca
+    state: present
+    identifiers:
+      name: Kanidm Root CA
+    attrs:
+      name: Kanidm Root CA
+      certificate_data: !Env KANIDM_CA_CERT
+
+  - model: authentik_policies_expression.expressionpolicy
+    id: policy-kanidm-group-sync
+    state: present
+    identifiers:
+      name: kanidm-group-sync
+    attrs:
+      name: kanidm-group-sync
+      expression: |
+        from authentik.core.models import Group, UserTypes
+
+        groups_from_token = context.get("source_info", {}).get("groups", [])
+        # Kanidm appends @kanidm.lab.example.com to group names in Authentik
+        managed = ["homelab-admins@kanidm.lab.example.com", "homelab-developers@kanidm.lab.example.com"]
+
+        target_groups = Group.objects.filter(name__in=groups_from_token)
+        managed_groups = Group.objects.filter(name__in=managed)
+
+        request.user.groups.remove(*managed_groups)
+        request.user.groups.add(*target_groups)
+
+        request.user.type = UserTypes.INTERNAL
+        request.user.save()
+
+        return True
+
+  - model: authentik_policies.policybinding
+    id: binding-kanidm-group-sync
+    state: present
+    identifiers:
+      order: 0
+      policy: !KeyOf policy-kanidm-group-sync
+      target: !KeyOf flow-source-authentication
+    attrs:
+      target: !KeyOf flow-source-authentication
+      policy: !KeyOf policy-kanidm-group-sync
+      order: 0
+      enabled: true
+
+  - model: authentik_sources_oauth.oauthsource
+    id: source-kanidm
+    state: present
+    identifiers:
+      name: Kanidm
+      slug: kanidm
+    attrs:
+      provider_type: openidconnect
+      consumer_key: authentik
+      consumer_secret: !Env KANIDM_OIDC_CLIENT_SECRET
+      oidc_well_known_url: "https://kanidm.lab.example.com:8443/oauth2/openid/authentik/.well-known/openid-configuration"
+      authentication_flow: !Find [authentik_flows.flow, [slug, default-source-authentication]]
+      enrollment_flow: !Find [authentik_flows.flow, [slug, default-source-enrollment]]
+      additional_scopes: "groups"
+      verification_kp: !KeyOf kanidm-ca
+      group_property_mappings: []
+      user_property_mappings: []
+      # name_link: match groups from Kanidm token to existing authentik groups
+      # by name, rather than trying to create new ones. This prevents a
+      # duplicate key crash when groups like homelab-admins already exist from
+      # the groups.yaml blueprint.
+      group_matching_mode: name_link
+
+  - model: authentik_stages_identification.identificationstage
+    state: present
+    identifiers:
+      name: default-authentication-identification
+    attrs:
+      sources:
+        - !KeyOf source-kanidm

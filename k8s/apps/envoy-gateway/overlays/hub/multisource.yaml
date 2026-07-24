@@ -1,0 +1,7 @@
+appName: envoy-gateway
+chart: gateway-helm
+namespace: envoy-gateway-system
+repoURL: oci://registry-1.docker.io/envoyproxy/gateway-helm
+syncWave: '0'
+valuesFile: k8s/apps/envoy-gateway/overlays/hub/values.yaml
+version: v1.8.1

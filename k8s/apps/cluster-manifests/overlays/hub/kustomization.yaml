@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - capmox-secret.yaml
+  - spoke-talos-secrets.yaml
+  - spoke-cluster.yaml
+  - spoke-machines.yaml
+  - apps-cluster.yaml
+  - apps-machines.yaml
+  - apps-cilium-helmchartproxy.yaml
+  - spoke-cilium-helmchartproxy.yaml

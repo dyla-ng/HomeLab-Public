@@ -1,0 +1,70 @@
+ipam:
+  mode: kubernetes
+kubeProxyReplacement: true
+k8sServiceHost: localhost
+k8sServicePort: 7445
+securityContext:
+  capabilities:
+    ciliumAgent:
+      - CHOWN
+      - KILL
+      - NET_ADMIN
+      - NET_RAW
+      - IPC_LOCK
+      - SYS_ADMIN
+      - SYS_RESOURCE
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+    cleanCiliumState:
+      - NET_ADMIN
+      - SYS_ADMIN
+      - SYS_RESOURCE
+cgroup:
+  autoMount:
+    enabled: false
+  hostRoot: /sys/fs/cgroup
+bgpControlPlane:
+  enabled: true
+
+ingressController:
+  enabled: true
+  default: true
+  loadbalancerMode: dedicated
+
+
+hubble:
+  enabled: true
+  relay:
+    enabled: true
+  ui:
+    enabled: true
+    ingress:
+      enabled: true
+      className: cilium
+      annotations:
+        cert-manager.io/cluster-issuer: vault-issuer
+      hosts:
+        - hubble.lab.example.com
+      tls:
+        - secretName: hubble-tls
+          hosts:
+            - hubble.lab.example.com
+  metrics:
+    enabled:
+      - dns
+      - drop
+      - tcp
+      - flow
+      - port-distribution
+      - icmp
+      - httpV2:exemplars=true;labelsContext=source_ip,source_namespace,source_workload,destination_ip,destination_namespace,destination_workload,traffic_direction
+    serviceMonitor:
+      enabled: true
+      labels:
+        release: kube-prometheus-stack
+    dashboards:
+      enabled: true
+      labels:
+        grafana_dashboard: "1"

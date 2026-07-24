@@ -1,0 +1,22 @@
+agent:
+  fleet:
+    enabled: true
+    url: "https://seconion.lab.example.com:8220"
+    tokenFromSecret:
+      name: tetragon-elastic-agent-credentials
+      key: enrollment_token
+    insecure: true
+
+kubernetes:
+  enabled: false
+
+extraVolumes:
+  - name: tetragon-export
+    hostPath:
+      path: /var/run/cilium/tetragon
+      type: DirectoryOrCreate
+
+extraVolumeMounts:
+  - name: tetragon-export
+    mountPath: /var/run/cilium/tetragon
+    readOnly: true

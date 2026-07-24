@@ -1,0 +1,19 @@
+replicaCount: 1
+
+webhooks:
+  enabled: true
+
+serviceMonitor:
+  enabled: true
+  labels:
+    release: kube-prometheus-stack
+
+grafanaDashboard:
+  enabled: true
+  labels:
+    grafana_dashboard: "1"
+
+prometheusRules:
+  enabled: true
+  labels:
+    release: kube-prometheus-stack

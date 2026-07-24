@@ -1,0 +1,43 @@
+# Certs / keys
+*.key
+*.pem
+*.crt
+*.csr
+
+# Talos Secrets and Node Configs
+infrastructure/talos/secrets.yaml
+infrastructure/talos/talosconfig
+infrastructure/talos/controlplane.yaml
+infrastructure/talos/worker.yaml
+infrastructure/talos-hub/secrets.yaml
+infrastructure/talos-hub/talosconfig
+infrastructure/talos-hub/controlplane.yaml
+infrastructure/talos-hub/worker.yaml
+infrastructure/talos-hub/kubeconfig-hub
+
+# Ignore cluster credentials if accidentally dropped in folder (sanity check)
+kubeconfig
+kubeconfig-hub
+kubeconfig-apps
+
+# Terraform junk
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+*.terraform.lock.hcl
+
+# Packer
+*.pkrvars.hcl
+packer_cache/
+
+#Continue
+mcp-shell.log
+.continue/
+
+#Mac
+.DS_Store
+
+#Other
+.env

@@ -1,0 +1,20 @@
+apiVersion: virtualenvironmentdownloadfile.proxmoxbpg.m.crossplane.io/v1alpha1
+kind: EnvironmentDownloadFile
+metadata:
+  name: debian-13-cloudimage
+  namespace: crossplane-system
+spec:
+  providerConfigRef:
+    name: proxmox-hub-ns
+    kind: ProviderConfig
+  forProvider:
+    nodeName: R730PVE
+    datastoreId: local
+    contentType: import
+    url: "https://cloud.debian.org/images/cloud/trixie/latest/debian-13-genericcloud-amd64.qcow2"
+    fileName: "debian-13-genericcloud-amd64.qcow2"
+    checksum: "b565b4414a720b96f5ba0fdd41521138bbfbd53f6c1cf17f9a22088484190d2a0ec24e7fdfb76314710ad4c11c1056b5080883a2e4d40bc27cc353116eecd7e2"
+    checksumAlgorithm: sha512
+    overwrite: false
+    overwriteUnmanaged: false
+    uploadTimeout: 1800

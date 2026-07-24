@@ -1,0 +1,66 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: hugo-blog-policy
+  namespace: blog
+spec:
+  endpointSelector:
+    matchLabels:
+      app: hugo-blog
+  ingress:
+    # Allow HTTP traffic from cloudflared tunnel client only
+    - fromEndpoints:
+        - matchLabels:
+            app: cloudflared
+      toPorts:
+        - ports:
+            - port: "80"
+              protocol: TCP
+  egress:
+    # hugo-blog is completely static and needs zero outbound egress
+    []
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: cloudflared-policy
+  namespace: blog
+spec:
+  endpointSelector:
+    matchLabels:
+      app: cloudflared
+  ingress:
+    # cloudflared establishes outbound connections only and accepts no ingress
+    []
+  egress:
+    # 1. Allow DNS queries to CoreDNS
+    - toEndpoints:
+        - matchLabels:
+            "k8s:io.kubernetes.pod.namespace": kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+          rules:
+            dns:
+              - matchPattern: "*"
+    # 2. Allow outbound HTTPS to Cloudflare edge nodes
+    - toEntities:
+        - world
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+            - port: "7844" # Cloudflare Tunnel protocol (optional, but used by cloudflared)
+              protocol: TCP
+    # 3. Allow routing traffic to hugo-blog service
+    - toEndpoints:
+        - matchLabels:
+            app: hugo-blog
+      toPorts:
+        - ports:
+            - port: "80"
+              protocol: TCP

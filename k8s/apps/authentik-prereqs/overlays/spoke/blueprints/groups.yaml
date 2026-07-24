@@ -1,0 +1,34 @@
+version: 1
+metadata:
+  name: homelab-groups
+  labels:
+    blueprints.goauthentik.io/instantiate: "true"
+
+entries:
+  - model: authentik_core.group
+    id: group-homelab-admins
+    identifiers:
+      name: homelab-admins@kanidm.lab.example.com
+    attrs:
+      name: homelab-admins@kanidm.lab.example.com
+      is_superuser: false
+
+  - model: authentik_core.group
+    id: group-homelab-developers
+    identifiers:
+      name: homelab-developers@kanidm.lab.example.com
+    attrs:
+      name: homelab-developers@kanidm.lab.example.com
+      is_superuser: false
+
+  - model: authentik_providers_oauth2.scopemapping
+    id: scope-groups
+    identifiers:
+      scope_name: groups
+    attrs:
+      name: groups
+      description: "Access to user's groups"
+      expression: |
+        return {
+            "groups": [g.name for g in request.user.ak_groups.all()]
+        }

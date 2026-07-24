@@ -1,0 +1,58 @@
+#cloud-config
+fqdn: ${domain}
+manage_etc_hosts: true
+
+users:
+  - name: root
+    ssh_authorized_keys:
+      - ${ssh_public_key}
+
+
+write_files:
+  - path: /etc/kanidm/server.toml
+    permissions: '0644'
+    owner: root:root
+    content: |
+      version = "2"
+      domain = "${domain}"
+      origin = "${origin}"
+      bindaddress = "0.0.0.0:8443"
+      ldapbindaddress = "0.0.0.0:3636"
+      db_path = "/var/lib/kanidm/kanidm.db"
+      tls_chain = "/var/lib/kanidm/certs/fullchain.pem"
+      tls_key = "/var/lib/kanidm/certs/privkey.pem"
+
+runcmd:
+  # Step 1: Open required ports in firewalld
+  - echo "Opening firewalld ports..."
+  - firewall-cmd --permanent --add-port=8443/tcp
+  - firewall-cmd --permanent --add-port=3636/tcp
+  - firewall-cmd --reload
+
+  # Step 2: Bootstrap self-signed TLS certificates for secure startup
+  - echo "Generating temporary TLS certificates..."
+  - openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /var/lib/kanidm/certs/privkey.pem -out /var/lib/kanidm/certs/fullchain.pem -subj "/CN=${domain}" -addext "subjectAltName=DNS:${domain}"
+  - chown -R kanidm:kanidm /var/lib/kanidm
+
+  # Step 3: Write systemd override to disable DynamicUser so traditional static user permissions work
+  - echo "Configuring systemd overrides..."
+  - mkdir -p /etc/systemd/system/kanidmd.service.d
+  - printf "[Service]\nDynamicUser=no\nUser=kanidm\nGroup=kanidm\n" > /etc/systemd/system/kanidmd.service.d/override.conf
+  - systemctl daemon-reload
+
+  # Step 4: Start the server (this auto-creates the database structure and active admin socket)
+  - echo "Starting Kanidm server to auto-initialize the database..."
+  - systemctl start kanidmd
+  - sleep 5
+
+  # Step 5: Programmatically set passwords for administrative accounts using stdin pipe over the socket (changed after first boot)
+  - echo "Configuring admin accounts..."
+  - printf "${admin_password}\n${admin_password}\n" | kanidmd recover-account -c /etc/kanidm/server.toml admin
+  - printf "${idm_admin_password}\n${idm_admin_password}\n" | kanidmd recover-account -c /etc/kanidm/server.toml idm_admin
+
+  # Step 6: Enable Kanidm service to start on boot
+  - echo "Enabling Kanidm service on boot..."
+  - systemctl enable kanidmd
+
+
+

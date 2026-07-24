@@ -1,0 +1,44 @@
+server:
+  dataStorage:
+    enabled: true
+    size: 10Gi
+    storageClass: local-storage-vault
+  extraEnvironmentVars:
+    VAULT_CACERT: /vault/userconfig/vault-tls/ca.crt
+  readinessProbe:
+    enabled: true
+    path: "/v1/sys/health?standbyok=true&sealedcode=204&uninitcode=204"
+  livenessProbe:
+    enabled: true
+    path: "/v1/sys/health?standbyok=true"
+  ha:
+    enabled: true
+    raft:
+      config: |
+        ui = true
+        listener "tcp" {
+          address = "[::]:8200"
+          cluster_address = "[::]:8201"
+          tls_cert_file = "/vault/userconfig/vault-tls/tls.crt"
+          tls_key_file  = "/vault/userconfig/vault-tls/tls.key"
+        }
+        storage "raft" {
+          path    = "/vault/data"
+          node_id = "vault-0"
+        }
+      enabled: true
+      setNodeId: false
+    replicas: 1
+  service:
+    nodePort: 32200
+    type: NodePort
+  volumeMounts:
+  - mountPath: /vault/userconfig/vault-tls
+    name: vault-tls
+    readOnly: true
+  volumes:
+  - name: vault-tls
+    secret:
+      secretName: vault-tls
+global:
+  tlsDisable: false

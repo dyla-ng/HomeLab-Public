@@ -1,0 +1,3 @@
+appName: gateway-config
+namespace: gateway-system
+syncWave: '0'

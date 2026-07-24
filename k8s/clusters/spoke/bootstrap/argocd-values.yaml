@@ -1,0 +1,103 @@
+global:
+  logging:
+    format: text
+    level: info
+  domain: argocd.lab.example.com
+
+controller:
+  replicas: 1
+  env:
+    - name: SSL_CERT_DIR
+      value: "/app/config/tls:/etc/ssl/certs"
+  resources:
+    limits:
+      cpu: "1"
+      memory: 1024Mi
+    requests:
+      cpu: 250m
+      memory: 512Mi
+
+dex:
+  enabled: false # Using Authentik for OIDC
+
+redis:
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+server:
+  replicas: 1
+  extraArgs:
+    - --insecure # TLS terminsation happens at ingress level
+  env:
+    - name: SSL_CERT_DIR
+      value: "/app/config/tls:/etc/ssl/certs"
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  ingress:
+    enabled: false
+    ingressClassName: cilium
+    annotations:
+      cert-manager.io/cluster-issuer: vault-issuer
+      ingress.kubernetes.io/ssl-redirect: "true"
+      ingress.kubernetes.io/proxy-body-size: "0"
+    extraTls:
+      - hosts:
+          - argocd.lab.example.com
+        secretName: argocd-tls
+
+configs:
+  tls:
+    create: false
+  cm:
+    # OIDC integration with Authentik
+    oidc.config: |
+      name: Authentik
+      issuer: https://authentik.lab.example.com/application/o/argocd/
+      clientID: argocd
+      clientSecret: $argocd-sso-secret:client-secret
+      requestedScopes: ["openid", "profile", "email", "groups"]
+
+  rbac:
+    # Use groups claim for mapping roles
+    scopes: '[groups]'
+    # Default role for authenticated users who are not in the admin group
+    policy.default: role:readonly
+    # Map Authentik group to ArgoCD Admin
+    policy.csv: |
+      g, homelab-admins, role:admin
+
+repoServer:
+  replicas: 1
+  env:
+    - name: SSL_CERT_DIR
+      value: "/app/config/tls:/etc/ssl/certs"
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1024Mi
+    requests:
+      cpu: 100m
+      memory: 512Mi
+
+applicationSet:
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+notifications:
+  enabled: false

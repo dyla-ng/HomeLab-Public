@@ -1,0 +1,111 @@
+apiVersion: cluster.x-k8s.io/v1beta2
+kind: Cluster
+metadata:
+  name: apps
+  namespace: default
+  labels:
+    cni-cluster: apps
+spec:
+  paused: false
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+        - 10.244.0.0/16
+    services:
+      cidrBlocks:
+        - 10.96.0.0/16
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
+    kind: TalosControlPlane
+    name: apps-control-plane
+    apiGroup: controlplane.cluster.x-k8s.io
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
+    kind: ProxmoxCluster
+    name: apps
+    apiGroup: infrastructure.cluster.x-k8s.io
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
+kind: ProxmoxCluster
+metadata:
+  name: apps
+  namespace: default
+spec:
+  # By default CAPMOX refuses to let the SUM of all configured VM memory
+  # (running AND stopped) exceed host physical RAM, regardless of actual
+  # usage. With many stopped VMs holding large configured allocations
+  # (e.g. a stopped VM with large RAM configured), this total can hit the host's
+  # total capacity even with 60+GB actually free.
+  # memoryAdjustment: 0 disables this conservative check and allows
+  # overcommit, matching the host's real available memory.
+  # from: https://a-cup-of.coffee/blog/talos-capi-proxmox/
+  schedulerHints:
+    memoryAdjustment: 0
+  controlPlaneEndpoint:
+    # Matches Spoke's pattern (.10 reserved as endpoint, .11+ as pool).
+    host: 10.100.40.10
+    port: 6443
+  credentialsRef:
+    name: spoke-proxmox-credentials
+    namespace: capmox-system
+  allowedNodes:
+    - R730PVE
+  dnsServers:
+    - 10.100.40.1
+  ipv4Config:
+    addresses:
+      - 10.100.40.11-10.100.40.20
+    gateway: 10.100.40.1
+    prefix: 24
+---
+apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
+kind: TalosControlPlane
+metadata:
+  name: apps-control-plane
+  namespace: default
+spec:
+  version: v1.35.2
+  replicas: 1
+  controlPlaneConfig:
+    controlplane:
+      # generateType: init (not "controlplane"). ALSO... CABPT generates its own secrets bundle; no
+      # pre-seeded apps-talos-secrets.yaml needed (compared to spoke with Spoke, which
+      # required pre-seeding to preserve trust material from prior to CAPT adoption).
+      generateType: init
+      talosVersion: v1.13.5
+      strategicPatches:
+        - |
+          cluster:
+            network:
+              cni:
+                name: none
+              podSubnets:
+                - 10.244.0.0/16
+              serviceSubnets:
+                - 10.96.0.0/16
+            allowSchedulingOnControlPlanes: true
+          machine:
+            network:
+              interfaces:
+                - interface: eth0
+                  dhcp: false
+                  vip:
+                    ip: 10.100.40.10
+            time:
+              disabled: false
+              servers:
+                - 10.100.40.1
+            kubelet:
+              image: ghcr.io/siderolabs/kubelet:v1.35.2
+              nodeIP:
+                validSubnets:
+                  - 10.100.40.0/24
+            install:
+              image: ghcr.io/siderolabs/installer:v1.13.5
+            features:
+              kubePrism:
+                enabled: true
+                port: 7445
+              hostDNS:
+                enabled: true
+                forwardKubeDNSToHost: true

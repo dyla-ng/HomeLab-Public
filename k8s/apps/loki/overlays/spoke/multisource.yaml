@@ -1,0 +1,8 @@
+appName: loki
+namespace: monitoring
+syncWave: '1'
+repoURL: https://grafana-community.github.io/helm-charts
+chart: loki
+version: 18.1.1
+valuesFile: k8s/apps/loki/overlays/spoke/values.yaml
+serverSideApply: "true"

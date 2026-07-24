@@ -1,0 +1,40 @@
+version: 1
+metadata:
+  name: homelab-fleet-sso
+  labels:
+    blueprints.goauthentik.io/instantiate: "true"
+
+entries:
+  # ── SAML Provider ─────────────────────────────────────────────────────────
+  - model: authentik_providers_saml.samlprovider
+    id: provider-fleet
+    identifiers:
+      name: Fleet
+    attrs:
+      acs_url: "https://fleet.lab.example.com/api/v1/fleet/sso/callback"
+      audience: "https://fleet.lab.example.com"
+      issuer: "https://authentik.lab.example.com/application/saml/fleet/metadata/"
+      sp_binding: "post"
+      authentication_flow: !Find [authentik_flows.flow, [slug, default-authentication-flow]]
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-invalidation-flow]]
+      signing_kp: !Find [authentik_crypto.certificatekeypair, [name, authentik Self-signed Certificate]]
+      sign_assertion: true
+
+
+      property_mappings:
+        - !Find [authentik_providers_saml.samlpropertymapping, [saml_name, "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"]]
+        - !Find [authentik_providers_saml.samlpropertymapping, [saml_name, "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"]]
+        - !Find [authentik_providers_saml.samlpropertymapping, [saml_name, "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/upn"]]
+
+  # ── Application ────────────────────────────────────────────────────────────
+  - model: authentik_core.application
+    id: app-fleet
+    identifiers:
+      slug: fleet
+    attrs:
+      name: Fleet
+      provider: !KeyOf provider-fleet
+      meta_launch_url: "https://fleet.lab.example.com"
+      meta_description: "Device Management & Endpoint Trust (Fleet MDM)"
+      group: "Operations"

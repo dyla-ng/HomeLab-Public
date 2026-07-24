@@ -1,0 +1,3 @@
+appName: kube-prometheus-stack-prereqs
+namespace: monitoring
+syncWave: '-1'

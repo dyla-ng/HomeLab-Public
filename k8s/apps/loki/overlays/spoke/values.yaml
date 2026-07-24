@@ -1,0 +1,81 @@
+deploymentMode: SimpleScalable
+
+loki:
+  auth_enabled: false
+  commonConfig:
+    replication_factor: 1
+  schemaConfig:
+    configs:
+      - from: "2024-01-01"
+        store: tsdb
+        object_store: s3
+        schema: v13
+        index:
+          prefix: loki_index_
+          period: 24h
+  storage:
+    type: s3
+    s3:
+      endpoint: http://garage.garage.svc.cluster.local:3900
+      region: garage
+      s3ForcePathStyle: true
+      insecure: true
+    bucketNames:
+      chunks: loki
+      ruler: loki
+      admin: loki
+  storage_config:
+    tsdb_shipper:
+      active_index_directory: /var/loki/index
+      cache_location: /var/loki/index_cache
+  extraEnv:
+    - name: AWS_ACCESS_KEY_ID
+      valueFrom:
+        secretKeyRef:
+          name: garage-loki-credentials
+          key: access-key-id
+    - name: AWS_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: garage-loki-credentials
+          key: secret-access-key
+
+read:
+  replicas: 1
+  persistence:
+    storageClass: zfs-iscsi
+    size: 5Gi
+
+write:
+  replicas: 1
+  persistence:
+    storageClass: zfs-iscsi
+    size: 5Gi
+
+backend:
+  replicas: 1
+  persistence:
+    storageClass: zfs-iscsi
+    size: 5Gi
+
+gateway:
+  enabled: true
+  replicas: 1
+
+monitoring:
+  selfMonitoring:
+    enabled: false
+    grafanaAgent:
+      installOperator: false
+  lokiCanary:
+    enabled: false
+  serviceMonitor:
+    enabled: true
+    labels:
+      release: kube-prometheus-stack
+
+test:
+  enabled: false
+
+minio:
+  enabled: false

@@ -1,0 +1,3 @@
+appName: vault-config
+namespace: vault-config-operator
+syncWave: '3'

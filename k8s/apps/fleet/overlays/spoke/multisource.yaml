@@ -1,0 +1,8 @@
+# NOTE: This is Fleet MDM (fleetdm.com) for device management, NOT Security Onion's Elastic Fleet Server.
+appName: fleet
+chart: fleet
+namespace: fleet
+repoURL: https://fleetdm.github.io/fleet/charts
+syncWave: '0'
+valuesFile: k8s/apps/fleet/overlays/spoke/values.yaml
+version: v7.0.10

@@ -1,0 +1,29 @@
+cluster:
+  allowSchedulingOnControlPlanes: true
+  network:
+    cni:
+      name: none
+    podSubnets:
+      - 10.244.0.0/16
+    serviceSubnets:
+      - 10.96.0.0/16
+  proxy:
+    disabled: true
+machine:
+  network:
+    interfaces:
+      - interface: ens18
+        addresses:
+          - 10.100.10.30/24
+        routes:
+          - gateway: 10.100.10.1
+    nameservers:
+      - 10.100.10.1
+  disks:
+    - device: /dev/sdb
+      partitions:
+        - mountpoint: /var/mnt/vault
+---
+apiVersion: v1alpha1
+kind: HostnameConfig
+hostname: homelab-talos-hub-cp

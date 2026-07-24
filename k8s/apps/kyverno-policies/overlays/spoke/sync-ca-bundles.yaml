@@ -1,0 +1,34 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: sync-ca-bundles
+  annotations:
+    policies.kyverno.io/title: "Sync CA Bundles"
+    policies.kyverno.io/description: "Generates vault-ca Secret in vso namespace from argocd-tls Secret."
+spec:
+  admission: true
+  background: true
+  generateExisting: true
+  validationFailureAction: Audit
+  rules:
+  - name: generate-vault-ca-secret
+    skipBackgroundRequests: true
+    match:
+      any:
+      - resources:
+          kinds:
+          - Secret
+          names:
+          - argocd-tls
+          namespaces:
+          - argocd
+    generate:
+      apiVersion: v1
+      kind: Secret
+      name: vault-ca
+      namespace: vso
+      synchronize: true
+      data:
+        type: Opaque
+        data:
+          ca.crt: "{{ request.object.data.\"ca.crt\" }}"

@@ -1,0 +1,20 @@
+extraHostPathMounts:
+  - name: sys-kernel-tracing
+    mountPath: /sys/kernel/tracing
+
+export:
+  filename: /var/run/cilium/tetragon/tetragon.log
+  fileMaxSizeMB: 10
+  fileMaxBackups: 5
+  fileCompress: true
+
+tetragon:
+  grpc:
+    enabled: true
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 512Mi

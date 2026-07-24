@@ -1,0 +1,3 @@
+appName: pki
+namespace: cert-manager
+syncWave: '-2'

@@ -1,0 +1,27 @@
+csiDriver:
+  name: "org.democratic-csi.nfs"
+
+controller:
+  enabled: true
+  strategy: deployment
+
+node:
+  enabled: true
+  kubeletHostPath: /var/lib/kubelet
+
+driver:
+  existingConfigSecret: truenas-nfs-secret
+  config:
+    driver: freenas-api-nfs
+
+storageClasses:
+  - name: zfs-nfs
+    defaultClass: false
+    reclaimPolicy: Delete
+    volumeBindingMode: Immediate
+    allowVolumeExpansion: true
+    parameters:
+      fsType: nfs
+    mountOptions:
+      - noatime
+      - nfsvers=4
