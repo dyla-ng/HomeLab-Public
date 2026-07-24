@@ -123,6 +123,10 @@ The complexity is the point. This is how I learn how enterprise platform and sec
 
 Yes! Please don't ask about my power bill.
 
+**How frequently will you update this sanitized mirror?**
+
+Rarely, honestly. Gitleaks and Trufflehog catch the easy stuff, but redacting and sanity-checking all manifests by hand still takes a couple hours. It's not something I'll do often.
+
 
 **Can I hire you?**
 
