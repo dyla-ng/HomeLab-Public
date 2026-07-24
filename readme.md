@@ -11,20 +11,9 @@ I've been homelabbing for years. This latest stack is where all of it was always
 
 ## Architecture
 
-*(Diagrams coming soon. Need to create network topology overview and trust-tier diagrams.)*
+*(Diagrams coming soon. Will create network topology overview and trust-tier diagrams.)*
 
 
-## Lessons Learned
-
-There are so many sharp edges one encounters when building Kubernetes clusters and hosting real applications on them. It's a humbling process. As you add more features, apps, and security controls, complexity explodes. I broke the PKI a dozen times. Connecting Authentik and Kanidm was a multi-day endeavor. And if my power goes out right now, I need to manually unseal Vault. Being a one-man security, platform, and infra team is a lot of hats, and I've broken something under most of them.
-
-### **Greatest hits from the incident log:**
-
-**a. Four letters, two days:** Security Onion's Suricata container expects packet capture output at /nsm/suripcap; I mounted my NFS share at /nsm/pcap. Four letters was the difference between writing to the 4TB pool on TrueNAS and writing to local disk instead. The local directory was writable, so I got no errors. I only caught it by checking actual usage on the NFS export. Lesson: absence of failure isn't presence of success. Also, double check the docs.
-
-**b. The endpoint IP that couldn't exist yet:** CAPMOX won't let a cluster's controlPlaneEndpoint overlap its IP pool. This makes sense, until you're trying to bootstrap a brand-new single-node cluster and the only node is the pool. The fix is a Talos VIP, which lets one node hold both its pool IP and the fixed endpoint IP at once... except the VIP doesn't activate until etcd is already up. This means you can't point talosconfig at it during bootstrap either. Zero information online to dig me out of this one. After much head-scratching and trial-and-error, I worked out the solution. Bootstrap against the node's pool IP directly, wait for etcd come up, then let the VIP take over as the real endpoint once it's healthy.
-
-**c. The policy that looked fine but wasn't:** Locking down Crossplane's namespace with a default-deny Cilium NetworkPolicy immediately disconnected it from the k8s API. Cilium doesn't support combining toServices and toPorts in the same rule, which isn't documented anywhere in the CRD schema. I had to use toEntities: [kube-apiserver], which fixed it. Well... except on Talos. K8s API traffic routed through KubePrism shows up in Cilium as the host, not kube-apiserver, so I needed a second rule just for that. I ultimately figured out my blunder with hubble observe, which let me see dropped traffic in real time. 
 
 
 ## Technology Stack
@@ -82,7 +71,18 @@ There are so many sharp edges one encounters when building Kubernetes clusters a
 | Deployment | ArgoCD | Syncs the built image to the Apps cluster |
 | Supply chain security | Cosign, Syft, Trivy/Grype,| Enforced at admission: signed, scanned, SBOM-attested images only (Planned) | 
 
----
+## Lessons Learned
+
+There are so many sharp edges one encounters when building Kubernetes clusters and hosting real applications on them. It's a humbling process. As you add more features, apps, and security controls, complexity explodes. I broke the PKI a dozen times. Connecting Authentik and Kanidm was a multi-day endeavor. And if my power goes out right now, I need to manually unseal Vault. Being a one-man security, platform, and infra team is a lot of hats, and I've broken something under most of them.
+
+### **Greatest hits from the incident log:**
+
+**a. Four letters, two days:** Security Onion's Suricata container expects packet capture output at /nsm/suripcap; I mounted my NFS share at /nsm/pcap. Four letters was the difference between writing to the 4TB pool on TrueNAS and writing to local disk instead. The local directory was writable, so I got no errors. I only caught it by checking actual usage on the NFS export. Lesson: absence of failure isn't presence of success. Also, double check the docs.
+
+**b. The endpoint IP that couldn't exist yet:** CAPMOX won't let a cluster's controlPlaneEndpoint overlap its IP pool. This makes sense, until you're trying to bootstrap a brand-new single-node cluster and the only node is the pool. The fix is a Talos VIP, which lets one node hold both its pool IP and the fixed endpoint IP at once... except the VIP doesn't activate until etcd is already up. This means you can't point talosconfig at it during bootstrap either. Zero information online to dig me out of this one. After much head-scratching and trial-and-error, I worked out the solution. Bootstrap against the node's pool IP directly, wait for etcd come up, then let the VIP take over as the real endpoint once it's healthy.
+
+**c. The policy that looked fine but wasn't:** Locking down Crossplane's namespace with a default-deny Cilium NetworkPolicy immediately disconnected it from the k8s API. Cilium doesn't support combining toServices and toPorts in the same rule, which isn't documented anywhere in the CRD schema. I had to use toEntities: [kube-apiserver], which fixed it. Well... except on Talos. K8s API traffic routed through KubePrism shows up in Cilium as the host, not kube-apiserver, so I needed a second rule just for that. I ultimately figured out my blunder with hubble observe, which let me see dropped traffic in real time. 
+
 
 
 ## Roadmap / Current Status
