@@ -1,6 +1,8 @@
-# My k8s-native Homelab
+<h1 align="center">My k8s-native Homelab</h1>
 
-> My best attempt at pretending to be a DevOps Engineer. Welcome to my learning environment. This is a sanitized public mirror of my homelab's IaC repo.
+> My best attempt at pretending to be a DevOps Engineer. Welcome to my learning environment. 
+
+**This is a sanitized public mirror of my homelab's private IaC repo.**
 
 ## Background
 
