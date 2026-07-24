@@ -16,7 +16,7 @@ I've been homelabbing for years. This latest stack is where all of it was always
 
 There are so many sharp edges one encounters when building Kubernetes clusters and hosting real applications on them. It's a humbling process. As you add more features, apps, and security controls, complexity explodes. I broke the PKI a dozen times. Connecting Authentik and Kanidm was a multi-day endeavor. And if my power goes out right now, I need to manually unseal Vault. Being a one-man security, platform, and infra team is a lot of hats, and I've broken something under most of them.
 
-**Greatest hits from the incident log:**
+### **Greatest hits from the incident log:**
 
 **a. Four letters, two days:** Security Onion's Suricata container expects packet capture output at /nsm/suripcap; I mounted my NFS share at /nsm/pcap. Four letters was the difference between writing to the 4TB pool on TrueNAS and writing to local disk instead. The local directory was writable, so I got no errors. I only caught it by checking actual usage on the NFS export. Lesson: absence of failure isn't presence of success. Also, double check the docs.
 
@@ -27,7 +27,8 @@ There are so many sharp edges one encounters when building Kubernetes clusters a
 
 ## Technology Stack
 
-#### Infrastructure Layer
+<h3 align="center">Infrastructure</h3>
+
 | Component | Tool | Notes |
 |---|---|---|
 | Hypervisor | Proxmox VE | Runs all clusters, VMs, and OOB infra |
@@ -35,7 +36,8 @@ There are so many sharp edges one encounters when building Kubernetes clusters a
 | Storage | TrueNAS SCALE | democratic-csi (iSCSI + NFS), Fibre Channel HBA and disk shelves |
 | Networking | OPNsense | Virtual, VLAN segmentation; sits behind a physical upstream firewall |
 
-#### Kubernetes Platform
+<h3 align="center">Kubernetes Platform</h3>
+
 | Component | Tool | Notes |
 |---|---|---|
 | CNI | Cilium | BGP-advertised LoadBalancer IPs; also enforces namespace-level network policy |
@@ -44,21 +46,24 @@ There are so many sharp edges one encounters when building Kubernetes clusters a
 | PKI | HashiCorp Vault (intermediate CA) | cert-manager for issuance, trust-manager for CA bundle distribution |
 | Policy | Kyverno | Admission control for pod security standards |
 
-#### Identity & Access
+<h3 align="center">Identity & Access</h3>
+
 | Component | Tool | Notes |
 |---|---|---|
 | Identity Provider | Kanidm | OOB VM, source of truth for all identity, survives cluster loss |
 | SSO | Authentik | Federated upstream to Kanidm via OIDC; SSO + MFA for ArgoCD, Harbor, Grafana, and more |
 | Container Registry | Harbor | OIDC-gated, Spoke workloads migrating off direct internet pulls |
 
-#### Observability
+<h3 align="center">Observability</h3>
+
 | Component | Tool | Notes |
 |---|---|---|
 | Monitoring | Prometheus + Grafana | Hub Prometheus remote-writes to Spoke for unified dashboards |
 | Logging | Loki | Simple Scalable mode, self-hosted Garage S3 backend writing to TrueNAS |
 | Log shipping | Alloy | DaemonSet ships pod logs from every node to Loki |
 
-#### Security Operations
+<h3 align="center">Security Operations</h3>
+
 | Component | Tool | Notes |
 |---|---|---|
 | SOC | Security Onion | Standalone VM, separated from monitored clusters Suricata IDS, Zeek, full PCAP to a dedicated, encrypted, TrueNAS pool |
@@ -66,7 +71,8 @@ There are so many sharp edges one encounters when building Kubernetes clusters a
 | Runtime enforcement | Tetragon | Process lineage, block/kill on policy match (in-progress) |
 | Runtime detection | Falco | Feeds Security Onion for alerting, complements Tetragon's enforcement (in-progress) |
 
-#### CI/CD
+<h3 align="center">CI/CD</h3>
+
 | Component | Tool | Status |
 |---|---|---|
 | CI Platform | GitHub Actions | Triggers on push to the Astro repo |
@@ -80,39 +86,44 @@ There are so many sharp edges one encounters when building Kubernetes clusters a
 ## Roadmap / Current Status
 
 ### Complete
-- Core networking & GitOps foundation (Talos, Cilium, BGP, ArgoCD, internal PKI)
-- Hub/Spoke/Apps multi-cluster architecture (CAPI / CAPT-managed)
-- Identity federation (Kanidm + Authentik OIDC and SSO)
-- Secrets management (Vault, VCO, VSO)
-- Full observability stack (kube-prometheus-stack, Loki, Alloy, Grafana)
-- Security Onion SOC: real detection proven end-to-end with tmNIDS, plus baseline silence rules tuned to filter legitimate inter-cluster traffic
-- Tetragon deployed on Hub and Spoke: eBPF observability confirmed
-- Astro blog CI/CD pipeline (ARC build leads to ArgoCD deploy)
+- **Core networking & GitOps foundation** (Talos, Cilium, BGP, ArgoCD, internal PKI)
+- **Hub/Spoke/Apps/Secure multi-cluster architecture** (CAPI / CAPT-managed)
+- **Identity federation** (Kanidm + Authentik OIDC and SSO)
+- **Secrets management** (Vault, VCO, VSO)
+- **Full observability stack** (kube-prometheus-stack, Loki, Alloy, Grafana)
+- **Security Onion SOC:** real detection proven end-to-end with tmNIDS, plus baseline silence rules tuned to filter legitimate inter-cluster traffic
+- **Tetragon deployed on Hub and Spoke:** eBPF observability confirmed
+- **Astro blog CI/CD pipeline** (ARC build leads to ArgoCD deploy)
 
 ### In progress
-- Harbor: deployed with OIDC and service accounts, but Spoke workloads still aren't fully routed through it (some still pull directly from the internet)
-- Kyverno: baseline audit policies live (run-as-non-root, resource limits, host namespace blocking). Additional targeted policies  still being phased in.
-- Tetragon: deployed, real eBPF events confirmed, but no actual TracingPolicy enforcement/detection rules written yet. Currently observation-only mode.
-- Cilium network policies: pattern established, applied to a selection of namespaces so far.
-- Connecting SIGMA rules and Elastic Defend: detections work in Kibana natively, but I'm working on an issue where custom SIGMA rules aren't displaying in Security Onion's own Detections view; still investigating!
-- Secure cluster: for workloads holding genuinely sensitive personal data. 
+- **Harbor:** deployed with OIDC and service accounts, but Spoke workloads still aren't fully routed through it (some still pull directly from the internet)
+- **Kyverno:** baseline audit policies live (run-as-non-root, resource limits, host namespace blocking). Additional targeted policies  still being phased in.
+- **Tetragon:** deployed, real eBPF events confirmed, but no actual TracingPolicy enforcement/detection rules written yet. Currently observation-only mode.
+- **Cilium NetworkPolicies:** pattern established, applied to a selection of namespaces so far.
+- **Connecting SIGMA rules and Elastic Defend:** detections work in Kibana natively, but I'm working on an issue where custom SIGMA rules aren't displaying in Security Onion's own Detections view; still investigating!
+- **Secure Cluster:** for workloads holding genuinely sensitive personal data. 
 
 ### Planned
-- Falco exporting logs to Security Onion, complementing Tetragon enforcement rules.
-- Software supply chain security: image signing w/ Cosign, Syft SBOM, Trivy/Grype vuln scanning
-- Disaster recovery: Velero backups + a tested Vault DR drill. On hold due to resource constraints.
+- **Falco log exports to Security Onion**, complementing Tetragon enforcement rules.
+- **Software supply chain security:** image signing w/ Cosign, Syft SBOM, Trivy/Grype vuln scanning
+- **Disaster recovery:** Velero backups + a tested Vault DR drill. On hold due to resource constraints.
 
 
 ## FAQ
 
 **Can I just clone this and run it?**
+
 Certainly not as-is. This is a frozen and heavity redacted snapshot of my environment. Domains, IPs, VLANs, secrets, and hardware assumptions are all specific to my environment. Some files are missing entirely. You'd need to customize essentially everything and piece together the gaps. I wouldn't recommend it.
 
 **Why so much complexity for a homelab?**
+
 The complexity is the point. This is how I learn how enterprise platform and security teams reason about trust boundaries, blast radius, and failure domains. 
 
 **Is this actually running 24/7?**
+
 Yes! Please don't ask about my power bill.
 
+
 **Can I hire you?**
+
 Yes! I'm actively looking for DevSecOps, DevOps, platform engineering, and security operations roles. Find me on [LinkedIn](https://www.linkedin.com/in/dylan-gollinger).
