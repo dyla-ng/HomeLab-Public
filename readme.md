@@ -1,6 +1,7 @@
 <h1 align="center">My k8s-native Homelab</h1>
 
 > My best attempt at pretending to be a DevOps Engineer. Welcome to my learning environment. 
+> Designed built from scratch. No templates and no tutorials. Architectural decisions were researched and implemented from first principles. 
 
 **This is a sanitized public mirror of my homelab's private IaC repo.**
 
